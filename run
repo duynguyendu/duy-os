@@ -19,6 +19,14 @@ while [[ $# -gt 0 ]]; do
             HEXING=1
             shift
             ;;
+        --help)
+            echo "Usage: ./run [OPTION...] FILENAME"
+            echo ""
+            echo "-r, --run         run file"
+            echo "-c, --compile     compile file only"
+            echo "-h, --hex         compile and dump hex code"
+            exit
+            ;;
         *)
             FILENAME="$1"
             shift

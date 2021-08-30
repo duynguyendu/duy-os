@@ -10,6 +10,14 @@
   mov si, msg
   call sprint
 
+  mov ax, 0xb800
+  mov gs, ax
+  mov bx, 0x0000
+  mov ax, [gs:bx]
+
+  mov word [reg16], ax
+  call print16
+
 hang:
   jmp hang
 
@@ -23,7 +31,7 @@ sprint:
   ret
 
 cprint:
-  mov ah, 0x0f
+  mov ah, 0x6b
   mov cx, ax
 
   movzx ax, byte [ypos]
@@ -42,9 +50,32 @@ cprint:
 
   ret
 
+print16:
+  mov di, outstr16
+  mov ax, [reg16]
+  mov si, hexstr
+  mov cx, 4
+hexloop:
+  rol ax, 4
+  mov bx, ax
+  and bx, 0x0f
+  mov bl, [si + bx]
+  mov [di], bl
+  inc di
+  dec cx
+  jnz hexloop
+
+  mov si, outstr16
+  call sprint
+
+  ret
 xpos db 0
 ypos db 0
 msg db "Why mine is not running????", 0
+
+reg16 dw 0
+hexstr db "0123456789ABCDEF"
+outstr16 db "0000", 0
 
 times 510-($-$$) db 0
 db 0x55
