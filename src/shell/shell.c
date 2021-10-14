@@ -21,7 +21,7 @@ int main() {
     // TODO support history
     // TODO support upper arrow and down arrow
     while (1) {
-        printf("$ ");
+        printf("\033[0;31m$ \033[0m");
         fgets(cmdline, MAX_CMD_LINE, stdin);
         if (feof(stdin)) {
             exit(0);
@@ -46,12 +46,12 @@ void eval(char *cmdline) {
             char **path_name = paths;
             while (path_name != NULL){
                 char command_name[1024];
+                command_name[0] = '\0';
                 strcat(command_name, *path_name);
                 strcat(command_name, "/");
                 strcat(command_name, argv[0]);
                 argv[0] = command_name;
                 // TODO support both /bin/ls and ls
-                printf("path: %s\n", argv[0]);
                 if (execve(argv[0], argv, environ) < 0) {
                     exit(0);
                 }
