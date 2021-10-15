@@ -1,4 +1,5 @@
 #include "util.h"
+#include "builtin_functions.h"
 
 #define MAX_CMD_LINE 1024
 #define MAX_ARGS 1024
@@ -7,9 +8,14 @@ char **environ;
 char pathstr[1024] = "/bin:/home/duy/.local/bin:";
 char *paths[5];
 
+// A mapping table for the name and its function
+int num_of_builtin = 7;
+char builtin_func_name[20][20] = {"name", "shell", "exit", "slam", "pwd", "cowsay", "version"};
+builtin_func_t builtin_func[20] = {__name, __shell, __exit, __slam, __pwd, __cowsay, __version};
+
 void eval(char *cmdline);
 int parse_line(char *str, char **argv);
-int built_in(char **argv);
+int builtin(char **argv);
 void process_path(char *pathstr, char **paths);
 
 int main() {
@@ -71,43 +77,12 @@ void eval(char *cmdline) {
     }
 }
 
-int built_in(char **argv) {
-    if (equal(argv[0], "name")) {
-        // Creator name
-        printf("Duy\n");
-        return 1;
-    } else if (equal(argv[0], "shell")) {
-        // Shell name
-        printf("DeShell\n");
-        return 1;
-    } else if (equal(argv[0], "quit") || equal(argv[0], "exit")) {
-        // Exit shell
-        exit(0);
-    } else if (equal(argv[0], "slam")) {
-        // Echo
-        char **current = argv+1;
-        while (*current != NULL) {
-            // Print environment variable
-            if (equal(*current, "$PATH")) {
-                // Join paths with :
-                printf("%s", paths[0]);
-                int i = 1;
-                while (paths[i] != NULL) {
-                    printf(":%s", paths[i]);
-                    i++;
-                }
-            } else {
-                // Remove double quote in double-quoted word
-                if (*current[0] == '"') {
-                    (*current)++;
-                    (*current)[strlen(*current)-1] = '\0';
-                }
-                printf("%s ", *current);
-            }
-            current++;
+int builtin(char **argv) {
+    for (int i = 0; i < num_of_builtin; i++) {
+        if (equal(argv[0], builtin_func_name[i])) {
+            builtin_func[i](argv);
+            return 1;
         }
-        printf("\n");
-        return 1;
     }
     return 0;
 }
