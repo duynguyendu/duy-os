@@ -10,11 +10,12 @@ char *paths[5];
 
 // A mapping table for the name and its function
 int num_of_builtin = 7;
-char builtin_func_name[20][20] = {"name", "shell", "exit", "slam", "pwd", "cowsay", "version"};
-builtin_func_t builtin_func[20] = {__name, __shell, __exit, __slam, __pwd, __cowsay, __version};
+char builtin_func_name[20][20] = {"name", "shell",  "exit",   "slam",
+                                  "pwd",  "cowsay", "version"};
+builtin_func_t builtin_func[20] = {__name, __shell,  __exit,   __slam,
+                                   __pwd,  __cowsay, __version};
 
 void eval(char *cmdline);
-int parse_line(char *str, char **argv);
 int builtin(char **argv);
 void process_path(char *pathstr, char **paths);
 
@@ -57,15 +58,16 @@ void eval(char *cmdline) {
 
     if (!builtin(argv)) {
         if ((pid = fork()) == 0) {
-            if (execve(argv[0], argv, environ) < 0){
+            if (execve(argv[0], argv, environ) < 0) {
                 char **path_name = paths;
-                while (*path_name != NULL){
+                while (*path_name != NULL) {
                     char command_name[1024];
                     command_name[0] = '\0';
                     strcat(command_name, *path_name);
                     strcat(command_name, "/");
                     strcat(command_name, argv[0]);
-                    if (!(execve(command_name, argv, environ) < 0)) {}
+                    if (!(execve(command_name, argv, environ) < 0)) {
+                    }
                     path_name++;
                 }
                 printf("%s: Command not found\n", argv[0]);
@@ -152,7 +154,7 @@ void process_path(char *pathstr, char **paths) {
     while ((path_delim = strchr(pathstr, ':'))) {
         paths[p_total++] = pathstr;
         *path_delim = '\0';
-        pathstr = path_delim+1;
+        pathstr = path_delim + 1;
     }
     paths[p_total] = NULL;
 }

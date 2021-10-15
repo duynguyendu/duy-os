@@ -1,17 +1,14 @@
 #include "builtin_functions.h"
 
-void __name(char **argv) {
-    printf("Duy\n");
-}
+void __name(char **argv) { printf("Duy\n"); }
 
-void __shell(char **argv) {
-    printf("DeShell\n");
-}
+void __shell(char **argv) { printf("DeShell\n"); }
 
 void __slam(char **argv) {
     // Echo
-    char **current = argv+1;
+    char **current = argv + 1;
     while (*current != NULL) {
+        // TODO handle environment variable
         // Print environment variable
         // if ((*current)[0] == '$') {
 
@@ -28,7 +25,7 @@ void __slam(char **argv) {
             // Remove double quote in double-quoted word
             if (*current[0] == '"') {
                 (*current)++;
-                (*current)[strlen(*current)-1] = '\0';
+                (*current)[strlen(*current) - 1] = '\0';
             }
             printf("%s ", *current);
         }
@@ -47,19 +44,15 @@ void __pwd(char **argv) {
     }
 }
 
-void __exit(char **argv) {
-    exit(0);
-}
+void __exit(char **argv) { exit(0); }
 
 void __cowsay(char **argv) {
     if (argv[1] == NULL) {
         printf("cowsay needs something to say\n");
-    }  else {
+    } else {
         printf("*** .-. ***\n");
         printf("%s\n", argv[1]);
     }
 }
 
-void __version(char **argv) {
-    printf("1.0\n");
-}
+void __version(char **argv) { printf("1.0\n"); }
