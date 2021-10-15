@@ -8,12 +8,12 @@ int parse_line(char *buf, char **argv) {
     int dq = 0;
     int argc = 0;
 
-    // Remove trailing white space
+    /* Remove trailing white space */
     while (*buf && (*buf == ' ')) {
         buf++;
     }
 
-    // TODO handle double quote
+    /* TODO handle double quote */
     delim = buf;
     while (*delim) {
         if (*delim == '"') {
@@ -26,25 +26,24 @@ int parse_line(char *buf, char **argv) {
         delim++;
     }
     while ((delim = strchr(buf, ' '))) {
-        // Delimenate between bufing by replacing ' ' with '\0'
-        // And having a pointer points to beginning of buf
+        /* Deliminate string with whitespace ' ' */
         argv[argc++] = buf;
         *delim = '\0';
         buf = delim + 1;
 
-        // Remove redundant white space
+        /* Remove redundant white space */
         while (*buf && (*buf == ' ')) {
             buf++;
         }
     }
 
-    // The last should be null
+    /* The last is null to indicate the end */
     argv[argc] = NULL;
     if (argc == 0) {
         return 1;
     }
 
-    // Check if running in background
+    /* Check if running in background */
     if ((bg = (*argv[argc - 1] == '&'))) {
         argv[--argc] = NULL;
     }
