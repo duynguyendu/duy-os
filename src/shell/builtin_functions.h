@@ -3,11 +3,13 @@
 
 #include "util.h"
 
-typedef void (*builtin_func_t) (char **argv);
+typedef void (*builtin_func_t)(char **argv);
 
 extern char builtin_func_name[20][20];
 extern builtin_func_t builtin_func[20];
 extern char **environ;
+
+int builtin(char **argv);
 
 void __name(char **argv);
 void __shell(char **argv);

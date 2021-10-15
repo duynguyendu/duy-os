@@ -9,20 +9,13 @@ char **environ;
 char pathstr[1024] = "/bin:/home/duy/.local/bin:";
 char *paths[5];
 
-// A mapping table for the name and its function
-int num_of_builtin = 7;
-char builtin_func_name[20][20] = {"name", "shell",  "exit",   "slam",
-                                  "pwd",  "cowsay", "version"};
-builtin_func_t builtin_func[20] = {__name, __shell,  __exit,   __slam,
-                                   __pwd,  __cowsay, __version};
-
 void eval(char *cmdline);
-int builtin(char **argv);
 void process_path(char *pathstr, char **paths);
 
 int main() {
     char cmdline[MAX_CMD_LINE];
     int cmdlen;
+    // TODO process path
     extern char *paths[5];
     process_path(pathstr, paths);
 
@@ -71,7 +64,7 @@ void eval(char *cmdline) {
                     }
                     path_name++;
                 }
-                printf("%s: Command not found\n", argv[0]);
+                fprintf(stderr, "%s: Command not found\n", argv[0]);
                 exit(0);
             }
         }
@@ -79,7 +72,7 @@ void eval(char *cmdline) {
         if (!bg) {
             int status;
             if (waitpid(pid, &status, 0) < 0) {
-                printf("Error: waitpid error\n");
+                fprintf(stderr, "Error: waitpid error\n");
             }
         } else {
             printf("%d %s", pid, cmdline);
@@ -87,20 +80,9 @@ void eval(char *cmdline) {
     }
 }
 
-int builtin(char **argv) {
-    for (int i = 0; i < num_of_builtin; i++) {
-        if (equal(argv[0], builtin_func_name[i])) {
-            builtin_func[i](argv);
-            return 1;
-        }
-    }
-    return 0;
-}
-
 void process_path(char *pathstr, char **paths) {
     char *path_delim;
     int p_total = 0;
-    // pathstr[strlen(pathstr)-1] = ':';
     while ((path_delim = strchr(pathstr, ':'))) {
         paths[p_total++] = pathstr;
         *path_delim = '\0';

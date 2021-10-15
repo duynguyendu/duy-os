@@ -1,5 +1,22 @@
 #include "builtin_functions.h"
 
+/* A mapping table for the name and its function */
+int num_of_builtin = 7;
+char builtin_func_name[20][20] = {"name", "shell",  "exit",   "slam",
+                                  "pwd",  "cowsay", "version"};
+builtin_func_t builtin_func[20] = {__name, __shell,  __exit,   __slam,
+                                   __pwd,  __cowsay, __version};
+
+int builtin(char **argv) {
+    for (int i = 0; i < num_of_builtin; i++) {
+        if (equal(argv[0], builtin_func_name[i])) {
+            builtin_func[i](argv);
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void __name(char **argv) { printf("Duy\n"); }
 
 void __shell(char **argv) { printf("DeShell\n"); }
