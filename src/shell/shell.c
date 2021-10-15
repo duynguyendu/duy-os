@@ -1,6 +1,7 @@
 #include "builtin_functions.h"
 #include "parser.h"
 #include "util.h"
+#include <setjmp.h>
 
 #define MAX_CMD_LINE 1024
 #define MAX_ARGS 1024
@@ -9,8 +10,16 @@ char **environ;
 char pathstr[1024] = "/bin:/home/duy/.local/bin:";
 char *paths[5];
 
+jmp_buf promt_input;
+
 void eval(char *cmdline);
 void process_path(char *pathstr, char **paths);
+void sig_int_handler(int signum) {
+    longjmp(promt_input, 1);
+}
+void sig_int_from_command(int signum) {
+    longjmp(promt_input, 2);
+}
 
 int main() {
     char cmdline[MAX_CMD_LINE];
@@ -19,19 +28,40 @@ int main() {
     extern char *paths[5];
     process_path(pathstr, paths);
 
-    // TODO support history
-    // TODO support upper arrow and down arrow
-    // TODO pipeline
-    // TODO redirect input output
-    // TODO stderr
-    // TODO CTRL+D CTRL+Z CTRL+C handling
-    // TODO expand ~
-    // TODO PS1
-    // TODO coloring
-    // TODO add more builtin command
-    // TODO make test
+    /*
+    TODO support history
+    TODO support upper arrow and down arrow
+    TODO pipeline
+    TODO redirect input output
+    TODO CTRL+D CTRL+Z CTRL+C handling
+    TODO expand ~
+    TODO PS1
+    TODO alias
+    TODO coloring
+    TODO add more builtin command
+    TODO make test
+    */
+
+    /* Setup signaling */
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = sig_int_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART; 
+
     while (1) {
-        printf("\033[0;31m$ \033[0m");
+        sigaction(SIGINT, &sa, NULL);
+        int jmp_return = sigsetjmp(promt_input, -1);
+        if (jmp_return == 1) {
+            /* SIGINT when in promt input */
+            printf("\b\b  \n");
+        } else if (jmp_return == 2) {
+            /* SIGINT when running command */
+            printf("\n");
+        }
+
+        /* Print red $ and get user input */
+        printf("\033[0;31mDuy $ \033[0m");
         fgets(cmdline, MAX_CMD_LINE, stdin);
         if (feof(stdin)) {
             exit(0);
@@ -51,6 +81,7 @@ void eval(char *cmdline) {
     }
 
     if (!builtin(argv)) {
+        signal(SIGINT, sig_int_from_command);
         if ((pid = fork()) == 0) {
             if (execve(argv[0], argv, environ) < 0) {
                 char **path_name = paths;
