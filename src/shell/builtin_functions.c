@@ -5,24 +5,16 @@ void __name(char **argv) { printf("Duy\n"); }
 void __shell(char **argv) { printf("DeShell\n"); }
 
 void __slam(char **argv) {
-    // Echo
     char **current = argv + 1;
     while (*current != NULL) {
-        // TODO handle environment variable
-        // Print environment variable
-        // if ((*current)[0] == '$') {
-
-        // }
-        if (equal(*current, "$PATH")) {
-            // // Join paths with :
-            // printf("%s", paths[0]);
-            // int i = 1;
-            // while (paths[i] != NULL) {
-            //     printf(":%s", paths[i]);
-            //     i++;
-            // }
+        if ((*current)[0] == '$') {
+            /* Environment variable */
+            char *e = getenv(*current + 1);
+            if (e != NULL) {
+                printf("%s ", e);
+            }
         } else {
-            // Remove double quote in double-quoted word
+            /* Remove double quote in double-quoted word */
             if (*current[0] == '"') {
                 (*current)++;
                 (*current)[strlen(*current) - 1] = '\0';
