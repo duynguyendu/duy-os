@@ -44,6 +44,7 @@
 *.su
 *.idb
 *.pdb
+*.o.debug
 
 # Kernel Module Compile Results
 *.mod*
@@ -53,3 +54,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Clang include path
+compile_flags.txt
