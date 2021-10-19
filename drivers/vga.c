@@ -1,19 +1,21 @@
 #include <asm/ports.h>
 #include <drivers/vga.h>
 
-unsigned int get_screen_offset(int row, int col);
-unsigned int get_cursor();
-void set_cursor(unsigned int offset);
-unsigned int handle_scrolling(unsigned int offset);
+static inline uint16_t get_screen_offset(uint8_t row, uint8_t col);
+uint16_t get_cursor();
+void set_cursor(uint16_t offset);
+uint16_t handle_scrolling(uint16_t offset);
+uint8_t get_row(uint16_t offset);
+uint8_t get_col(uint16_t offset);
 
-void put_at_(char character, int row, int col, char attribute_byte) {
-    unsigned char *vidmem = (unsigned char *)VIDEO_MEMORY;
+void vga_put_at(char character, int row, int col, uint8_t attribute_byte) {
+    uint16_t *vidmem = (uint16_t *)VIDEO_MEMORY;
 
     if (!attribute_byte) {
-        attribute_byte = (char)WHITE_ON_BLACK;
+        attribute_byte = vga_color_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
     }
 
-    unsigned int offset;
+    uint16_t offset;
     if (row >= 0 && col >= 0) {
         offset = get_screen_offset(row, col);
     } else {
@@ -23,41 +25,43 @@ void put_at_(char character, int row, int col, char attribute_byte) {
     /* If we see newline, set offset to the end of current row
     So the next one will advance to the first col of next line */
     if (character == '\n') {
-        int rows = offset / (2 * MAX_COL); // Multiple by 2 because each cell
-                                           // requires 2 bytes for a character
-        offset = get_screen_offset(rows, 79);
+        /* Multiple by 2 because 2 bytes per cell */
+        offset = get_screen_offset(get_row(offset), 79);
     } else {
-        /* First byte is the character, second byte is the color */
-        vidmem[offset] = character;
-        vidmem[offset + 1] = attribute_byte;
+        vidmem[offset] = vga_entry(character, attribute_byte);
     }
 
     /* Update date offset to next cell */
-    offset += 2;
+    offset += 1;
 
     /* Make scrolling when we reach bottom of screen */
     // TODO
-    /* offset = handle_scrolling(offset); */
+    if (offset >= get_screen_offset(MAX_ROW, MAX_COL)) {
+        offset = handle_scrolling(offset);
+    }
 
     set_cursor(offset);
 }
 
-unsigned int get_screen_offset(int row, int col) {
-    return (unsigned int)(row * MAX_COL + col) * 2;
+static inline uint16_t get_screen_offset(uint8_t row, uint8_t col) {
+    return (uint16_t)((uint16_t)row * MAX_COL + col);
 }
 
-unsigned int get_cursor() {
+uint16_t get_cursor() {
     /* Reg 14 stores high bytes
     Reg 15 stores low bytes */
     port_byte_out(REG_SCREEN_CTRL, 14);
-    unsigned int offset = port_byte_in(REG_SCREEN_DATA) << 8;
+    uint16_t offset = port_byte_in(REG_SCREEN_DATA) << 8;
     port_byte_out(REG_SCREEN_CTRL, 15);
     offset += port_byte_in(REG_SCREEN_DATA);
-    return offset * 2;
+    return offset;
 }
 
-void set_cursor(unsigned int offset) {
-    offset /= 2;
+uint8_t get_row(uint16_t offset) { return offset / (2 * MAX_COL); }
+
+uint8_t get_col(uint16_t offset) { return (offset / 2) % MAX_COL; }
+
+void set_cursor(uint16_t offset) {
     port_byte_out(REG_SCREEN_CTRL, 14);
     port_byte_out(REG_SCREEN_DATA, (unsigned char)(offset >> 8));
     port_byte_out(REG_SCREEN_CTRL, 15);
@@ -65,31 +69,41 @@ void set_cursor(unsigned int offset) {
 }
 
 // TODO
-/* unsigned int handle_scrolling(unsigned int offset); */
+uint16_t handle_scrolling(uint16_t offset) {
+    uint8_t row = get_row(offset);
+    uint16_t *video_mem = (uint16_t *)VIDEO_MEMORY;
+    for (uint8_t i = 0; i < row; i++) {
+        memcpy(video_mem, video_mem+1, MAX_COL * 2);
+        video_mem++;
+    }
+    memset(video_mem+offset, 0, MAX_COL * MAX_ROW * 2 - offset);
+    return offset - MAX_COL * 2;
+}
 
-void print_at_(char *message, int row, int col) {
+void vga_print_at(char *message, int row, int col) {
     if (row >= 0 && col >= 0) {
         set_cursor(get_screen_offset(row, col));
     }
 
     int i = 0;
     while (message[i] != '\0') {
-        put_at_(message[i], row, col, 0);
+        vga_put_at(message[i], row, col, 0);
         i++;
     }
 }
 
-void printf_(char *message) { print_at_(message, -1, -1); }
+void vga_put(char c) { vga_put_at(c, -1, -1, 0); }
 
-void clear_screen_() {
+void vga_print(char *message) { vga_print_at(message, -1, -1); }
+
+void vga_clear_screen() {
     int screen_size = MAX_COL * MAX_ROW;
-    int i;
-    char *screen = (char *)VIDEO_MEMORY;
+    uint16_t *screen = (uint16_t *)VIDEO_MEMORY;
+    uint8_t color = vga_color_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 
     /* Iterate through all cells and set it to space */
-    for (i = 0; i < screen_size; i++) {
-        screen[i * 2] = ' ';
-        screen[i * 2 + 1] = WHITE_ON_BLACK;
+    for (int i = 0; i < screen_size; i++) {
+        screen[i] = vga_entry(' ', color);
     }
     /* Reset cursor to beginning */
     set_cursor(get_screen_offset(0, 0));

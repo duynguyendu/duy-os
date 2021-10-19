@@ -21,6 +21,8 @@ LD = i386-elf-ld
 %.o: %.asm
 	nasm $< -f elf -o $@
 
+all: kernel_i386.o boot.bin
+
 boot.bin: boot/bootstrap.asm
 	nasm $< -f bin -o $@
 
@@ -31,7 +33,7 @@ kernel_i386.o.debug: boot/kernel_entry.o boot/interrupt/interrupt.o ${OBJ_DEBUG}
 	${LD} -T linker.ld -o $@ $^ -r
 
 clean:
-	rm -f *.o boot/interrupt/*.o
+	rm -f *.o boot/interrupt/*.o *.bin
 
 clean_debug:
 	rm -f *.o.debug boot/interrupt/*.o.debug
@@ -43,5 +45,3 @@ debug_makefile:
 	$(info $(OBJ))
 
 debug: kernel_i386.o.debug boot.bin
-
-all: kernel.o boot.bin
