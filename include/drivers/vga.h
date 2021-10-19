@@ -25,6 +25,7 @@ enum vga_color {
 #define VIDEO_MEMORY 0xb8000
 #define MAX_ROW 25
 #define MAX_COL 80
+#define VIDEO_MEMORY_SIZE 2000
 #define REG_SCREEN_CTRL 0x3d4
 #define REG_SCREEN_DATA 0x3d5
 
@@ -40,6 +41,7 @@ static inline uint16_t vga_entry(char c, uint8_t attr) {
 
 /* Print a character at row, col or at cursor current position */
 void vag_put_at(char character, int row, int col, char attribute_byte);
+void vga_put(char c);
 void vga_print_at(char *message, int row, int col);
 void vga_print(char *message);
 void vga_clear_screen();
