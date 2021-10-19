@@ -1,4 +1,5 @@
 #include <asm/ports.h>
+#include <drivers/keyboard.h>
 #include <idt.h>
 #include <isr.h>
 #include <stdio.h>
@@ -11,6 +12,7 @@ void irq1_handler(registers_t r) { printf("testing keyboard interrupt\n"); }
 
 void install_isr() {
     register_interrupt_handler(0, isr0_handler);
+    keyboard_init();
 
     /* Hardware interrupt */
     /* 0: Divide by 0 */
