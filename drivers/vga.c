@@ -69,11 +69,13 @@ uint16_t handle_scrolling(uint16_t offset) {
     uint8_t row = get_row(offset);
     uint16_t *video_mem = (uint16_t *)VIDEO_MEMORY;
     for (uint8_t i = 0; i < row; i++) {
+        /* Move each row up */
         memcpy(video_mem, video_mem + MAX_COL,
                MAX_COL * 2);
         video_mem += MAX_COL;
     }
     offset -= MAX_COL;
+    /* Clear the rest */
     memset(video_mem + offset, 0,
            MAX_COL * MAX_ROW * 2 - offset * 2);
     return offset;
