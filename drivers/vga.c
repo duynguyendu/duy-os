@@ -1,5 +1,6 @@
 #include <asm/ports.h>
 #include <drivers/vga.h>
+#include <memory.h>
 
 static inline uint16_t get_screen_offset(uint8_t row, uint8_t col);
 uint16_t get_cursor();
@@ -25,17 +26,12 @@ void vga_put_at(char character, int row, int col, uint8_t attribute_byte) {
     /* If we see newline, set offset to the end of current row
     So the next one will advance to the first col of next line */
     if (character == '\n') {
-        /* Multiple by 2 because 2 bytes per cell */
-        offset = get_screen_offset(get_row(offset), 79);
+        offset = get_screen_offset(get_row(offset) + 1, 0);
     } else {
         vidmem[offset] = vga_entry(character, attribute_byte);
+        offset += 1;
     }
 
-    /* Update date offset to next cell */
-    offset += 1;
-
-    /* Make scrolling when we reach bottom of screen */
-    // TODO
     if (offset >= get_screen_offset(MAX_ROW, MAX_COL)) {
         offset = handle_scrolling(offset);
     }
@@ -57,9 +53,9 @@ uint16_t get_cursor() {
     return offset;
 }
 
-uint8_t get_row(uint16_t offset) { return offset / (2 * MAX_COL); }
+uint8_t get_row(uint16_t offset) { return offset / MAX_COL; }
 
-uint8_t get_col(uint16_t offset) { return (offset / 2) % MAX_COL; }
+uint8_t get_col(uint16_t offset) { return offset % MAX_COL; }
 
 void set_cursor(uint16_t offset) {
     port_byte_out(REG_SCREEN_CTRL, 14);
@@ -73,11 +69,14 @@ uint16_t handle_scrolling(uint16_t offset) {
     uint8_t row = get_row(offset);
     uint16_t *video_mem = (uint16_t *)VIDEO_MEMORY;
     for (uint8_t i = 0; i < row; i++) {
-        memcpy(video_mem, video_mem+1, MAX_COL * 2);
-        video_mem++;
+        memcpy(video_mem, video_mem + MAX_COL,
+               MAX_COL * 2);
+        video_mem += MAX_COL;
     }
-    memset(video_mem+offset, 0, MAX_COL * MAX_ROW * 2 - offset);
-    return offset - MAX_COL * 2;
+    offset -= MAX_COL;
+    memset(video_mem + offset, 0,
+           MAX_COL * MAX_ROW * 2 - offset * 2);
+    return offset;
 }
 
 void vga_print_at(char *message, int row, int col) {
