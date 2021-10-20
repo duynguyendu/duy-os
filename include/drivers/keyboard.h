@@ -16,5 +16,5 @@
 #define KEYBOARD_STATUS 0x64
 #define KEYBOARD_DATA 0x60
 
-void keyboard_init();
+void keyboard_init(uint8_t i);
 #endif // !__KEYBOARD_H__

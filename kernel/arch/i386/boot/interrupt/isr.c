@@ -12,7 +12,6 @@ void irq1_handler(registers_t r) { printf("testing keyboard interrupt\n"); }
 
 void install_isr() {
     register_interrupt_handler(0, isr0_handler);
-    keyboard_init();
 
     /* Hardware interrupt */
     /* 0: Divide by 0 */
@@ -100,7 +99,7 @@ void install_isr() {
     idt_set_gate(32, (uint32_t)irq0, 0x08, 0x8E);
     /* 1: Keyboard on PS/2 port -> 33 */
     idt_set_gate(33, (uint32_t)irq1, 0x08, 0x8E);
-    /* 2: Cascaded signals from IRQs 8–15 (actually using IRQ 9) -> 34 */
+    /* 2: For 2 PICs communicate with each other (never raised) -> 34 */
     idt_set_gate(34, (uint32_t)irq2, 0x08, 0x8E);
     /* 3: Serial port controller for serial port 2 -> 35 */
     idt_set_gate(35, (uint32_t)irq3, 0x08, 0x8E);
@@ -124,7 +123,11 @@ void register_interrupt_handler(uint8_t n, isr_t handler) {
 }
 
 void isr_handler(registers_t r) {
-    printf("YES\n");
+    printf("Interrupt: ");
+    char i[5];
+    int_to_ascii(r.int_no, i);
+    printf(i);
+    printf("\n");
     if (interrupt_handlers[r.int_no] != 0) {
         isr_t handler = interrupt_handlers[r.int_no];
         handler(r);
