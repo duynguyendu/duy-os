@@ -14,6 +14,9 @@ call print_string
 call load_kernel
 
 ; Switch to protected mode
+mov si, SWITCHING_TO_PM_STR
+call print_string
+
 call switch_to_pm
 
 jmp $
@@ -27,7 +30,7 @@ jmp $
 load_kernel:
   ; Loading 1 sector to ES:BX (0x0:0x1000)
   mov bx, KERNEL_OFFSET
-  mov dh, 32
+  mov dh, 48
   mov dl, [BOOT_DRIVE]
   call disk_load
   ret
