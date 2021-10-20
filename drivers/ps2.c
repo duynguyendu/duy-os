@@ -23,7 +23,7 @@ void ps2_init() {
 
     /* Flush the buffer, read data and ignore it */
     /* PS2_READ_DATA(); */
-    // TODO 
+    // TODO
     port_byte_in(PS2_DATA);
 
     /* Read config */
@@ -140,13 +140,13 @@ void ps2_init() {
             case mf2_keyboard:
                 printf("[PS2] Keyboard\n");
                 keyboard_init(i);
-                ps2_write_device(i, ENABLE_SCANNING);
                 break;
             case unknown_device:
                 printf("[PS2] unknown_device\n");
             }
         }
     }
+
     STI();
 }
 
@@ -217,6 +217,7 @@ bool ps2_write(uint8_t port, uint8_t data) {
     }
 }
 
+// TODO handle resend
 void ps2_write_device(uint8_t device, uint8_t data) {
     if (device != 0) {
         ps2_switch_device_1();
@@ -224,9 +225,4 @@ void ps2_write_device(uint8_t device, uint8_t data) {
     PS2_SEND_DATA(data);
 }
 
-uint8_t ps2_read_device(uint8_t device) {
-    if (device != 0) {
-        ps2_switch_device_1();
-    }
-    return PS2_READ_DATA();
-}
+uint8_t ps2_read_device(uint8_t device) { return PS2_READ_DATA(); }

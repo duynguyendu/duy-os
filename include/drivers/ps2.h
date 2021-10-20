@@ -1,9 +1,10 @@
 #ifndef __PS2_H__
 #define __PS2_H__
 
-#include <types.h>
 #include <stdbool.h>
+#include <types.h>
 
+// TODO device list get info
 /* Ports */
 #define PS2_CMD 0x64
 #define PS2_DATA 0x60
