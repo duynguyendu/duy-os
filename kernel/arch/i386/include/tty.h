@@ -15,6 +15,6 @@ void tty_init();
 void tty_write(char *message);
 void tty_putchar(char c);
 
-void recieve_key(char key);
+void recieve_key(char key, uint8_t mask);
 
 #endif // !__TTY_H__
