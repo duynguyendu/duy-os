@@ -70,14 +70,12 @@ uint16_t handle_scrolling(uint16_t offset) {
     uint16_t *video_mem = (uint16_t *)VIDEO_MEMORY;
     for (uint8_t i = 0; i < row; i++) {
         /* Move each row up */
-        memcpy(video_mem, video_mem + MAX_COL,
-               MAX_COL * 2);
+        memcpy(video_mem, video_mem + MAX_COL, MAX_COL * 2);
         video_mem += MAX_COL;
     }
     offset -= MAX_COL;
     /* Clear the rest */
-    memset(video_mem + offset, 0,
-           MAX_COL * MAX_ROW * 2 - offset * 2);
+    memset(video_mem + offset, 0, MAX_COL * MAX_ROW * 2 - offset * 2);
     return offset;
 }
 
@@ -108,4 +106,20 @@ void vga_clear_screen() {
     }
     /* Reset cursor to beginning */
     set_cursor(get_screen_offset(0, 0));
+}
+
+void enable_cursor() {
+    uint8_t curosr_low = 14;
+    uint8_t cursor_high = 15;
+
+    port_byte_out(REG_SCREEN_CTRL, 0x0A);
+    port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xC0) | curosr_low);
+
+    port_byte_out(REG_SCREEN_CTRL, 0x0B);
+    port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xE0) | cursor_high);
+}
+
+void disable_cursor() {
+    port_byte_out(REG_SCREEN_CTRL, 0x0A);
+    port_byte_out(REG_SCREEN_DATA, 0x20);
 }
