@@ -1,7 +1,7 @@
 #ifndef __IDT__
 #define __IDT__
 
-#include "lib/type.h"
+#include <types.h>
 
 /* PIC ports */
 #define PIC_MASTER_CMD 0x0020

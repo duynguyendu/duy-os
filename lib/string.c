@@ -1,4 +1,4 @@
-#include "lib/string.h"
+#include <string.h>
 
 void int_to_ascii(int n, char str[]) {
     int i, sign;

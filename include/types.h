@@ -1,8 +1,8 @@
-#ifndef __TYPE__
-#define __TYPE__
+#ifndef __TYPE_H__
+#define __TYPE_H__
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 
-#endif // !__TYPE__
+#endif // !__TYPE_H__

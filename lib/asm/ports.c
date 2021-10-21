@@ -1,4 +1,4 @@
-#include "ports.h"
+#include <asm/ports.h>
 
 // TODO add comment
 unsigned char port_byte_in(unsigned short port) {

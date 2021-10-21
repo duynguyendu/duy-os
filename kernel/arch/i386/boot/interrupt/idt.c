@@ -1,6 +1,5 @@
-#include "interrupt/idt.h"
-#include "drivers/ports.h"
-#include "lib/memory.h"
+#include <idt.h>
+#include <asm/ports.h>
 
 /* Set each entry of idt */
 static void idt_set_gate(uint8_t num, uint32_t base, uint16_t selector,

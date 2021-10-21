@@ -1,18 +1,18 @@
-#include "isr.h"
-#include "drivers/ports.h"
-#include "drivers/screen.h"
-#include "interrupt/idt.h"
-#include "lib/string.h"
+#include <isr.h>
+#include <idt.h>
+#include <asm/ports.h>
+#include <stdio.h>
+#include <string.h>
 
 isr_t interrupt_handlers[256];
 
 void isr_handler(registers_t r) {
     if (r.int_no != 31) {
-        print("received interrupt: ");
+        printf("received interrupt: ");
         char s[3];
         int_to_ascii(r.int_no, s);
-        print(s);
-        print("\n");
+        printf(s);
+        printf("\n");
     }
 }
 

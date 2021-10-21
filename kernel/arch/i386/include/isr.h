@@ -1,7 +1,7 @@
 #ifndef __ISR__
 #define __ISR__
 
-#include "lib/type.h"
+#include <types.h>
 
 typedef struct {
     uint32_t ds;                                     /* Data segment selector */

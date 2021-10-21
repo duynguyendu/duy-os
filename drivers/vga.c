@@ -1,24 +1,19 @@
-#include "screen.h"
-#include "ports.h"
+#include <asm/ports.h>
+#include <drivers/vga.h>
 
 unsigned int get_screen_offset(int row, int col);
 unsigned int get_cursor();
 void set_cursor(unsigned int offset);
 unsigned int handle_scrolling(unsigned int offset);
 
-/* Print a character at row, col or at cursor current position */
-void print_char(char character, int row, int col, char attribute_byte) {
-    /* Pointer to the start of screen */
+void put_at_(char character, int row, int col, char attribute_byte) {
     unsigned char *vidmem = (unsigned char *)VIDEO_MEMORY;
 
-    /* Foreground and Background, use default if unspecify */
     if (!attribute_byte) {
         attribute_byte = (char)WHITE_ON_BLACK;
     }
 
-    /* Video memory offset for screen location */
     unsigned int offset;
-    /* Calculate offset based on row, col or use the current cursor position */
     if (row >= 0 && col >= 0) {
         offset = get_screen_offset(row, col);
     } else {
@@ -44,7 +39,6 @@ void print_char(char character, int row, int col, char attribute_byte) {
     // TODO
     /* offset = handle_scrolling(offset); */
 
-    /* Update cursor position */
     set_cursor(offset);
 }
 
@@ -73,21 +67,21 @@ void set_cursor(unsigned int offset) {
 // TODO
 /* unsigned int handle_scrolling(unsigned int offset); */
 
-void print_at(char *message, int row, int col) {
+void print_at_(char *message, int row, int col) {
     if (row >= 0 && col >= 0) {
         set_cursor(get_screen_offset(row, col));
     }
 
     int i = 0;
     while (message[i] != '\0') {
-        print_char(message[i], row, col, 0);
+        put_at_(message[i], row, col, 0);
         i++;
     }
 }
 
-void print(char *message) { print_at(message, -1, -1); }
+void printf_(char *message) { print_at_(message, -1, -1); }
 
-void clear_screen() {
+void clear_screen_() {
     int screen_size = MAX_COL * MAX_ROW;
     int i;
     char *screen = (char *)VIDEO_MEMORY;
