@@ -1,8 +1,17 @@
+#include <drivers/keyboard.h>
+#include <drivers/ps2.h>
 #include <drivers/vga.h>
+#include <interrupt/irq0_timer.h>
+#include <stdio.h>
+#include <tty.h>
 
 void main() {
-    vga_clear_screen();
-    vga_print("heello");
+    /* init_timer(100); */
+    tty_init();
+    ps2_init();
+    disable_cursor();
+    printf("Hello\n");
+    enable_cursor();
 
-    __asm__ __volatile__("int $2");
+    /* __asm__ __volatile__("int $0"); */
 }

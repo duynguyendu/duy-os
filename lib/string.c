@@ -24,3 +24,9 @@ void int_to_ascii(int n, char str[]) {
         i--;
     }
 }
+
+uint32_t strlen(const char *str) {
+    uint32_t i = 0;
+    while (str[i++] != '\0');
+    return i;
+}
