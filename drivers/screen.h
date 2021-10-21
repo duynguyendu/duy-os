@@ -10,10 +10,6 @@
 
 /* Print a character at row, col or at cursor current position */
 void print_char(char character, int row, int col, char attribute_byte);
-unsigned int get_screen_offset(int row, int col);
-unsigned int get_cursor();
-void set_cursor(unsigned int offset);
-unsigned int handle_scrolling(unsigned int offset);
 void print_at(char *message, int row, int col);
 void print(char *message);
 void clear_screen();

@@ -1,5 +1,10 @@
 #include "screen.h"
-#include "drivers/low_level.h"
+#include "ports.h"
+
+unsigned int get_screen_offset(int row, int col);
+unsigned int get_cursor();
+void set_cursor(unsigned int offset);
+unsigned int handle_scrolling(unsigned int offset);
 
 /* Print a character at row, col or at cursor current position */
 void print_char(char character, int row, int col, char attribute_byte) {
@@ -30,13 +35,15 @@ void print_char(char character, int row, int col, char attribute_byte) {
         /* First byte is the character, second byte is the color */
         vidmem[offset] = character;
         vidmem[offset + 1] = attribute_byte;
-        offset += 2;
     }
 
     /* Update date offset to next cell */
+    offset += 2;
+
     /* Make scrolling when we reach bottom of screen */
     // TODO
     /* offset = handle_scrolling(offset); */
+
     /* Update cursor position */
     set_cursor(offset);
 }
@@ -85,9 +92,11 @@ void clear_screen() {
     int i;
     char *screen = (char *)VIDEO_MEMORY;
 
+    /* Iterate through all cells and set it to space */
     for (i = 0; i < screen_size; i++) {
         screen[i * 2] = ' ';
         screen[i * 2 + 1] = WHITE_ON_BLACK;
     }
+    /* Reset cursor to beginning */
     set_cursor(get_screen_offset(0, 0));
 }

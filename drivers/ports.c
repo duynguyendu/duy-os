@@ -1,7 +1,5 @@
-#include "low_level.h"
-/* #include <kernel/low_level.h> */
+#include "ports.h"
 
-// FIXME in not working
 // TODO add comment
 unsigned char port_byte_in(unsigned short port) {
     unsigned char result;
@@ -11,7 +9,6 @@ unsigned char port_byte_in(unsigned short port) {
 
 void port_byte_out(unsigned short port, unsigned char data) {
     __asm__ volatile("out %%al, %%dx" : : "a"(data), "d"(port));
-    /* __asm__ volatile("out %%al, %%dx" : : "d"(port), "a"(data)); */
 }
 
 unsigned short port_word_in(unsigned short port) {
@@ -22,5 +19,4 @@ unsigned short port_word_in(unsigned short port) {
 
 void port_word_out(unsigned short port, unsigned short data) {
     __asm__ volatile("out %%ax, %%dx" : : "a"(data), "d"(port));
-    /* __asm__ volatile("out %%ax, %%dx" : : "d"(port), "a"(data)); */
 }
