@@ -27,7 +27,7 @@ jmp $
 load_kernel:
   ; Loading 1 sector to ES:BX (0x0:0x1000)
   mov bx, KERNEL_OFFSET
-  mov dh, 1
+  mov dh, 32
   mov dl, [BOOT_DRIVE]
   call disk_load
   ret

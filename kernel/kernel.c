@@ -1,18 +1,11 @@
-#include "../drivers/screen.h"
-#include "low_level.h"
+#include "drivers/screen.h"
+#include "interrupt/idt.h"
+#include "interrupt/isr.h"
 
 void main() {
-    char *videomem = (char *)0xb8000;
-    /* char *message = "Hello"; */
-    /* print(message); */
-    /* print_char('X', -1, -1, 0); */
-    /* unsigned int offset = get_cursor(); */
+    init_idt();
+    clear_screen();
 
-    unsigned int offset = get_cursor();
-    videomem[offset] = 'X';
-
-    offset += 2;
-
-    offset = get_cursor();
-    videomem[offset] = 'L';
+    __asm__ __volatile__("int $2");
+    __asm__ __volatile__("int $3");
 }
