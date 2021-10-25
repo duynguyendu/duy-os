@@ -41,6 +41,8 @@ char translate_key_table_shift[] = {
     '<', 'K', 'I', 'O', ')', '(', 0,   0,   '>', '?', 'L',  ':', 'P', '_', 0,
     0,   0,   '"', 0,   '{', '+', 0,   0,   0,   0,   '\n', '}', 0,   '|'};
 
+char translate_function_key[] = {};
+
 /* 0: Control, 1: Shift, 2: Alt, 3: Released */
 // TODO left, right modify key
 uint8_t mask = 0;
@@ -88,8 +90,50 @@ void keyboard_interrupt_handler(registers_t r) {
         if (IS_RELEASE()) {
             UNSET_RELEASE();
         }
-    }
-
+    } else {
+        if (IS_RELEASE()) {
+            UNSET_RELEASE();
+        }
+        enum special_key spec_key;
+        switch (keycode) {
+        case KEY_F1:
+            spec_key = F1;
+            break;
+        case KEY_F2:
+            spec_key = F2;
+            break;
+        case KEY_F3:
+            spec_key = F3;
+            break;
+        case KEY_F4:
+            spec_key = F4;
+            break;
+        case KEY_F5:
+            spec_key = F5;
+            break;
+        case KEY_F6:
+            spec_key = F6;
+            break;
+        case KEY_F7:
+            spec_key = F7;
+            break;
+        case KEY_F8:
+            spec_key = F8;
+            break;
+        case KEY_F9:
+            spec_key = F9;
+            break;
+        case KEY_F10:
+            spec_key = F10;
+            break;
+        case KEY_F11:
+            spec_key = F11;
+            break;
+        case KEY_F12:
+            spec_key = F12;
+            break;
+        }
+        receive_special_key(spec_key, 0);
     }
     send_eoi(r);
 }
