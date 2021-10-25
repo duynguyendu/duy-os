@@ -1,9 +1,13 @@
 # Gcc flags
-CFLAGS = -I./include -fno-pie 
+CFLAGS = -I${PROJECT_DIR}/include -I${PROJECT_DIR}/kernel/arch/i386/include -fno-pie -ffreestanding -Wall -Wno-int-conversion
 CC = i386-elf-gcc
 LD = i386-elf-ld
 
 SUBDIRS = drivers lib kernel/arch/i386
+
+ASM_SOURCE = kernel/arch/i386/bootstrap.asm
+C_SOURCE = $(wildcard drivers/*.c lib/*.c kernel/arch/i386/*.c)
+HEADERS = $(wildcard include/*.h kernel/arch/i386/include/*.h)
 
 OBJ = kernel/arch/i386/kernel_i386.o drivers/drivers.o lib/lib.o 
 OBJ_DEBUG = ${OBJ:.o=.o.debug}

@@ -7,7 +7,7 @@ OBJ = ${C_SOURCES:.c=.o}
 OBJ_DEBUG = ${C_SOURCES:.c=.o.debug}
 
 # Gcc flags
-CFLAGS = -I${HOME}/duy-os/include -I${HOME}/duy-os/kernel/arch/i386/include -fno-pie 
+CFLAGS = -I${PROJECT_DIR}/include -I${PROJECT_DIR}/kernel/arch/i386/include -fno-pie -ffreestanding -Wall -Wno-int-conversion
 CC = i386-elf-gcc
 LD = i386-elf-ld
 
