@@ -8,8 +8,6 @@
 
 static void ps2_emtpy_buffer();
 static void ps2_switch_device_1();
-static bool ps2_wait_read();
-static bool ps2_wait_write();
 static enum device_type identify_device(uint8_t first, uint8_t second);
 
 void ps2_init() {
