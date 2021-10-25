@@ -51,42 +51,53 @@ void keyboard_interrupt_handler(registers_t r) {
         SET_RELEASE();
     } else if (keycode == KEY_CONTROL_LEFT) {
         if (IS_RELEASE()) {
+            UNSET_RELEASE();
             UNSET_CONTROL();
         } else {
             SET_CONTROL();
         }
     } else if (keycode == KEY_SHIFT_LEFT) {
         if (IS_RELEASE()) {
+            UNSET_RELEASE();
             UNSET_SHIFT();
         } else {
             SET_SHIFT();
         }
     } else if (keycode == KEY_ALT_LEFT) {
         if (IS_RELEASE()) {
+            UNSET_RELEASE();
             UNSET_ALT();
         } else {
             SET_ALT();
         }
-    } else if (0x15 <= keycode && keycode <= 0x5D) {
+    } else if (keycode == KEY_BACKSPACE) {
+        send_eoi(r);
+        receive_key('\b', mask);
         if (IS_RELEASE()) {
             UNSET_RELEASE();
-        } else {
-            char key;
-            if (IS_SHIFT()) {
-                key = translate_key_table_shift[keycode - 0x14];
-            } else {
-                key = translate_key_table[keycode - 0x14];
-            }
-            send_eoi(r);
-            recieve_key(key, mask);
         }
+    } else if (0x15 <= keycode && keycode <= 0x5D) {
+        char key;
+        if (IS_SHIFT()) {
+            key = translate_key_table_shift[keycode - 0x14];
+        } else {
+            key = translate_key_table[keycode - 0x14];
+        }
+        send_eoi(r);
+        receive_key(key, mask);
+        if (IS_RELEASE()) {
+            UNSET_RELEASE();
+        }
+    }
+
     }
     send_eoi(r);
 }
 
 void keyboard_init(uint8_t i) {
     dev_id = i;
-    // TODO Change code set to 2
+    mask = 0;
+
     printf("[Keyboard] Starting keyboard driver\n");
     printf("[Keyboard] Switching to scan code set 2\n");
     SEND_CMD(ENABLE_SCANNING);

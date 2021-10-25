@@ -1,7 +1,6 @@
 #ifndef __TTY_H__
 #define __TTY_H__
 
-#include <drivers/vga.h>
 #include <types.h>
 
 struct tty_buffer_ {
@@ -15,6 +14,7 @@ void tty_init();
 void tty_write(char *message);
 void tty_putchar(char c);
 
-void recieve_key(char key, uint8_t mask);
+void receive_key(char key, uint8_t mask);
+void receive_special_key(char special_key, uint8_t mask);
 
 #endif // !__TTY_H__
