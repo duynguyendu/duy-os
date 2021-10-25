@@ -2,7 +2,10 @@
 #define __MEMORY_H__
 
 #include <types.h>
-void memset(void *addr, uint8_t value, uint32_t len);
-void memcpy(void *dest, void *src, uint32_t len);
+
+uint32_t malloc_a(uint32_t size);
+uint32_t malloc_p(uint32_t size, uint32_t *phy);
+uint32_t malloc_ap(uint32_t size, uint32_t *phy);
+uint32_t malloc(uint32_t size);
 
 #endif // !__MEMORY_H__
