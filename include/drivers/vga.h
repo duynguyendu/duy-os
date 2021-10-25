@@ -45,6 +45,7 @@ void vga_put(char c);
 void vga_print_at(char *message, int row, int col);
 void vga_print(char *message);
 void vga_clear_screen();
+void vga_backspace();
 
 void enable_cursor();
 void disable_cursor();

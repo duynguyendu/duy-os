@@ -1,6 +1,6 @@
 #include <asm/ports.h>
 #include <drivers/vga.h>
-#include <memory.h>
+#include <string.h>
 
 static inline uint16_t get_screen_offset(uint8_t row, uint8_t col);
 uint16_t get_cursor();
@@ -108,15 +108,36 @@ void vga_clear_screen() {
     set_cursor(get_screen_offset(0, 0));
 }
 
+void vga_backspace() {
+    uint16_t *screen = (uint16_t *)VIDEO_MEMORY;
+    uint16_t offset = get_cursor();
+    if (offset != 0) {
+        offset--;
+        screen[offset] = vga_entry(
+            ' ', vga_color_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+        if (get_col(offset) == MAX_COL-1) {
+            while (get_col(offset) != 0 && ((screen[offset] & 0xFF) == ' ' || (screen[offset] & 0xFF) == '\n')) {
+                offset--;
+            }
+            if (get_col(offset) != 0) {
+                offset++;
+            }
+        }
+        set_cursor(offset);
+    }
+}
+
 void enable_cursor() {
     uint8_t curosr_low = 14;
     uint8_t cursor_high = 15;
 
     port_byte_out(REG_SCREEN_CTRL, 0x0A);
-    port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xC0) | curosr_low);
+    port_byte_out(REG_SCREEN_DATA,
+                  (port_byte_in(REG_SCREEN_DATA) & 0xC0) | curosr_low);
 
     port_byte_out(REG_SCREEN_CTRL, 0x0B);
-    port_byte_out(REG_SCREEN_DATA, (port_byte_in(REG_SCREEN_DATA) & 0xE0) | cursor_high);
+    port_byte_out(REG_SCREEN_DATA,
+                  (port_byte_in(REG_SCREEN_DATA) & 0xE0) | cursor_high);
 }
 
 void disable_cursor() {
