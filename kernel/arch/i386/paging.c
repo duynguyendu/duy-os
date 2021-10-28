@@ -15,10 +15,12 @@ static void set_frame(uint32_t frame_addr);
 static void clear_frame(uint32_t frame_addr);
 static uint32_t get_frame(uint32_t frame_addr);
 static uint32_t first_frame();
+static void enable_paging();
 
 page_table_directory_t *current_dir;
 
 void init_paging() {
+    // TODO FIX THIS STUPID THINGS (MORE MEMORY)
     uint32_t end_mem_addr = 0x1000000;
     nframes = end_mem_addr / 0x1000;
     frames = (uint32_t *)malloc(INDEX(nframes));
@@ -28,20 +30,22 @@ void init_paging() {
         (page_table_directory_t *)malloc_a(sizeof(page_table_directory_t));
     memset(kernel_directory, 0, sizeof(page_table_directory_t));
 
-    int i = 0;
-    while (i < placement_address) {
-        allocate_frame(get_page(i, 1, kernel_directory), 0, 0);
-        i += 0x1000;
+    for (uint32_t i = 0; i < 1024; i++) {
+        allocate_frame(get_page(i * 0x1000, 1, kernel_directory), 1, 1);
     }
 
     register_interrupt_handler(14, page_fault_handler);
 
     switch_page_directory(kernel_directory);
+    enable_paging();
 }
 
 void switch_page_directory(page_table_directory_t *new_dir) {
     current_dir = new_dir;
     __asm__ volatile("mov %0, %%cr3" : : "r"(&new_dir->tables_physical));
+}
+
+static void enable_paging() {
     uint32_t cr0;
     __asm__ volatile("mov %%cr0, %0" : "=r"(cr0) :);
     cr0 |= 0x80000000; // Enable paging!
@@ -59,7 +63,7 @@ page_t *get_page(uint32_t addr, int make, page_table_directory_t *dir) {
         dir->tables[table_index] =
             (page_table_t *)malloc_ap(sizeof(page_table_t), &temp);
         memset(dir->tables[table_index], 0, 0x1000);
-        dir->tables_physical[table_index] = temp;
+        dir->tables_physical[table_index] = temp | 0x3;
         return &dir->tables[table_index]->pages[addr % 1024];
     } else {
         return 0;
@@ -98,29 +102,31 @@ void page_fault_handler(registers_t r) {
 static void set_frame(uint32_t frame_addr) {
     uint32_t frame = frame_addr / 0x1000;
     uint32_t index = INDEX(frame);
-    uint32_t offset = INDEX(frame);
+    uint32_t offset = OFFSET(frame);
     frames[index] |= 1 << offset;
 }
 
 static void clear_frame(uint32_t frame_addr) {
     uint32_t frame = frame_addr / 0x1000;
     uint32_t index = INDEX(frame);
-    uint32_t offset = INDEX(frame);
+    uint32_t offset = OFFSET(frame);
     frames[index] &= ~(1 << offset);
 }
 
 static uint32_t get_frame(uint32_t frame_addr) {
     uint32_t frame = frame_addr / 0x1000;
     uint32_t index = INDEX(frame);
-    uint32_t offset = INDEX(frame);
+    uint32_t offset = OFFSET(frame);
     return frames[index] & (1 << offset);
 }
 
 static uint32_t first_frame() {
     for (uint32_t i = 0; i < INDEX(nframes); i++) {
-        for (uint32_t j = 0; j < 32; j++) {
-            if (!(frames[i] & (1 << j))) {
-                return 4 * i + 8 * j;
+        if (frames[i] != 0xFFFFFFFF) {
+            for (uint32_t j = 0; j < 32; j++) {
+                if (!(frames[i] & (1 << j))) {
+                    return 32 * i + j;
+                }
             }
         }
     }

@@ -1,5 +1,0 @@
-# ata0-master: type=disk, path="./os.bin", cylinders=8, heads=8, spt=17
-megs: 32
-floppya: 1_44=os.bin, status=inserted
-boot: a
-mouse: enabled=0
