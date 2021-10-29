@@ -2,12 +2,13 @@
 #include <drivers/vga.h>
 #include <string.h>
 
-static inline uint16_t get_screen_offset(uint8_t row, uint8_t col);
+#define get_col(offset) (offset % MAX_COL)
+#define get_row(offset) (offset / MAX_COL)
+#define get_screen_offset(row, col) ((row)*MAX_COL + (col))
+
 uint16_t get_cursor();
 void set_cursor(uint16_t offset);
 uint16_t handle_scrolling(uint16_t offset);
-uint8_t get_row(uint16_t offset);
-uint8_t get_col(uint16_t offset);
 
 void vga_put_at(char character, int row, int col, uint8_t attribute_byte) {
     uint16_t *vidmem = (uint16_t *)VIDEO_MEMORY;
@@ -39,10 +40,6 @@ void vga_put_at(char character, int row, int col, uint8_t attribute_byte) {
     set_cursor(offset);
 }
 
-static inline uint16_t get_screen_offset(uint8_t row, uint8_t col) {
-    return (uint16_t)((uint16_t)row * MAX_COL + col);
-}
-
 uint16_t get_cursor() {
     /* Reg 14 stores high bytes
     Reg 15 stores low bytes */
@@ -53,10 +50,6 @@ uint16_t get_cursor() {
     return offset;
 }
 
-uint8_t get_row(uint16_t offset) { return offset / MAX_COL; }
-
-uint8_t get_col(uint16_t offset) { return offset % MAX_COL; }
-
 void set_cursor(uint16_t offset) {
     port_byte_out(REG_SCREEN_CTRL, 14);
     port_byte_out(REG_SCREEN_DATA, (unsigned char)(offset >> 8));
@@ -64,7 +57,6 @@ void set_cursor(uint16_t offset) {
     port_byte_out(REG_SCREEN_DATA, (unsigned char)(offset & 0xFF));
 }
 
-// TODO
 uint16_t handle_scrolling(uint16_t offset) {
     uint8_t row = get_row(offset);
     uint16_t *video_mem = (uint16_t *)VIDEO_MEMORY;
@@ -115,8 +107,9 @@ void vga_backspace() {
         offset--;
         screen[offset] = vga_entry(
             ' ', vga_color_entry(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
-        if (get_col(offset) == MAX_COL-1) {
-            while (get_col(offset) != 0 && ((screen[offset] & 0xFF) == ' ' || (screen[offset] & 0xFF) == '\n')) {
+        if (get_col(offset) == MAX_COL - 1) {
+            while (get_col(offset) != 0 && ((screen[offset] & 0xFF) == ' ' ||
+                                            (screen[offset] & 0xFF) == '\n')) {
                 offset--;
             }
             if (get_col(offset) != 0) {
