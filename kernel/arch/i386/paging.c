@@ -79,22 +79,20 @@ void page_fault_handler(registers_t r) {
     int reserved = !(r.err_code & 0x8);
     int id = !(r.err_code & 0x10);
 
-    printf("Page Fault (");
+    kprintf("Page Fault (");
     if (present) {
-        printf("present ");
+        kprintf("present ");
     }
     if (rw) {
-        printf("read-only ");
+        kprintf("read-only ");
     }
     if (us) {
-        printf("user-mode ");
+        kprintf("user-mode ");
     }
     if (reserved) {
-        printf("reserved");
+        kprintf("reserved");
     }
-    printf(") at 0x0");
-    // TODO print hex
-    printf("\n");
+    kprintf(") at 0x%X\n", faulting_address);
     while (1)
         ;
 }
@@ -137,7 +135,7 @@ void allocate_frame(page_t *page, uint32_t is_kernel, uint32_t is_writable) {
     uint32_t index = first_frame();
     if (index == -1) {
         /* Loop forever */
-        printf("Out of memory\n");
+        kprintf("Out of memory\n");
         while (1)
             ;
     }

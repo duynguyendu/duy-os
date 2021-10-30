@@ -12,7 +12,7 @@ static enum device_type identify_device(uint8_t first, uint8_t second);
 
 void ps2_init() {
     bool devices[] = {true, true};
-    printf("PS2 Initialize\n");
+    kprintf("PS2 Initialize\n");
     CLI();
 
     /* Disable 2 channel */
@@ -29,14 +29,14 @@ void ps2_init() {
     uint8_t config = PS2_READ_DATA();
 
     if (!(config & SECOND_PS2_CLOCK)) {
-        printf("[PS2] No device on port 2 found\n");
+        kprintf("[PS2] No device on port 2 found\n");
         devices[1] = false;
     }
 
     config |= SYSTEM_FLAG;
     if (config & MUST_BE_ZERO) {
         // TODO color error
-        printf("[PS2] Invalid bit in controller configuration\n");
+        kprintf("[PS2] Invalid bit in controller configuration\n");
         config |= ~MUST_BE_ZERO;
     }
 
@@ -54,13 +54,13 @@ void ps2_init() {
 
     if (self_test_result != SELF_TEST_PASS) {
         // TODO color error
-        printf("[PS2] Self test fail\n");
+        kprintf("[PS2] Self test fail\n");
         devices[0] = false;
         devices[1] = false;
 
         return;
     } else {
-        printf("[PS2] Self test pass\n");
+        kprintf("[PS2] Self test pass\n");
     }
 
     /* Interface test */
@@ -68,7 +68,7 @@ void ps2_init() {
     uint8_t port_test_result = PS2_READ_DATA();
     if (port_test_result != PORT_PASS) {
         // TODO color error
-        printf("[PS2] Port 1 failed\n");
+        kprintf("[PS2] Port 1 failed\n");
         devices[0] = false;
     }
 
@@ -76,34 +76,34 @@ void ps2_init() {
     port_test_result = PS2_READ_DATA();
     if (port_test_result != PORT_PASS) {
         // TODO color error
-        printf("[PS2] Port 2 failed\n");
+        kprintf("[PS2] Port 2 failed\n");
         devices[1] = false;
     }
 
     /* Enable devices and reset */
     if (devices[0]) {
-        printf("[PS2] Enable device 1\n");
+        kprintf("[PS2] Enable device 1\n");
         PS2_SEND_CMD(ENABLE_FIRST_PORT);
 
         ps2_write_device(0, RESET);
         uint8_t ack = PS2_READ_DATA();
         if (ack != RESET_SUCCESS || PS2_READ_DATA() != PS2_DEV_RESET_ACK) {
             // TODO color error
-            printf("[PS2] Reset device 1 failed\n");
+            kprintf("[PS2] Reset device 1 failed\n");
             devices[0] = false;
         } else {
             config |= FIRST_PS2_PORT_INTERRUPT;
         }
     }
     if (devices[1]) {
-        printf("[PS2] Enable device 2\n");
+        kprintf("[PS2] Enable device 2\n");
         PS2_SEND_CMD(ENABLE_SECOND_PORT);
 
         ps2_write_device(1, RESET);
         uint8_t ack = PS2_READ_DATA();
         if (ack != RESET_SUCCESS || PS2_READ_DATA() != PS2_DEV_RESET_ACK) {
             // TODO color error
-            printf("[PS2] Reset device 2 failed\n");
+            kprintf("[PS2] Reset device 2 failed\n");
             devices[1] = false;
         } else {
             config |= SECOND_PS2_PORT_INTERRUPT;
@@ -131,16 +131,16 @@ void ps2_init() {
             case standar_ps2_mouse:
             case mouse_with_scroll_wheel:
             case mouse_button5:
-                printf("[PS2] Mouse not supported yet\n");
+                kprintf("[PS2] Mouse not supported yet\n");
                 devices[i] = false;
                 break;
             case mf2_keyboard_with_translation:
             case mf2_keyboard:
-                printf("[PS2] Keyboard\n");
+                kprintf("[PS2] Keyboard\n");
                 keyboard_init(i);
                 break;
             case unknown_device:
-                printf("[PS2] unknown_device\n");
+                kprintf("[PS2] unknown_device\n");
             }
         }
     }
@@ -151,7 +151,7 @@ void ps2_init() {
 bool ps2_expect_ack() {
     uint8_t status = PS2_READ_DATA();
     if (!(status == PS2_ACK)) {
-        printf("[PS2] Failed to acknowledge command\n");
+        kprintf("[PS2] Failed to acknowledge command\n");
         return false;
     }
     return true;
@@ -192,7 +192,7 @@ uint8_t ps2_read(uint8_t port) {
         __asm__("pause");
     }
     if (timer == 0) {
-        printf("[PS2] Read failed\n");
+        kprintf("[PS2] Read failed\n");
         return -1;
     } else {
         return port_byte_in(port);
@@ -207,7 +207,7 @@ bool ps2_write(uint8_t port, uint8_t data) {
         __asm__("pause");
     }
     if (timer == 0) {
-        printf("[PS2] Write failed\n");
+        kprintf("[PS2] Write failed\n");
         return false;
     } else {
         port_byte_out(port, data);

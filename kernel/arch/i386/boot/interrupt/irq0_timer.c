@@ -9,11 +9,7 @@ uint32_t tick = 0;
 
 static void timer_callback(registers_t r) {
     tick++;
-    printf("Tick ");
-    char temp_tick[20];
-    int_to_ascii(tick, temp_tick);
-    printf(temp_tick);
-    printf("\n");
+    kprintf("Tick: %d\n", tick);
     send_eoi(r);
 }
 

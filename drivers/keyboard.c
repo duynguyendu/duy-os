@@ -142,8 +142,8 @@ void keyboard_init(uint8_t i) {
     dev_id = i;
     mask = 0;
 
-    printf("[Keyboard] Starting keyboard driver\n");
-    printf("[Keyboard] Switching to scan code set 2\n");
+    kprintf("[Keyboard] Starting keyboard driver\n");
+    kprintf("[Keyboard] Switching to scan code set 2\n");
     SEND_CMD(ENABLE_SCANNING);
 
     keyboard_set_scan_code_set(0x2);

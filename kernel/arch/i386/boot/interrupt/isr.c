@@ -7,8 +7,7 @@
 
 isr_t interrupt_handlers[256];
 
-void isr0_handler(registers_t r) { printf("No 0 ples\n"); }
-void irq1_handler(registers_t r) { printf("testing keyboard interrupt\n"); }
+void isr0_handler(registers_t r) { kprintf("No 0 ples\n"); }
 
 void install_isr() {
     register_interrupt_handler(0, isr0_handler);
@@ -123,11 +122,7 @@ void register_interrupt_handler(uint8_t n, isr_t handler) {
 }
 
 void isr_handler(registers_t r) {
-    printf("Interrupt: ");
-    char i[5];
-    int_to_ascii(r.int_no, i);
-    printf(i);
-    printf("\n");
+    kprintf("Interrupt: %d\n", r.int_no);
     if (interrupt_handlers[r.int_no] != 0) {
         isr_t handler = interrupt_handlers[r.int_no];
         handler(r);
