@@ -19,7 +19,7 @@ static void enable_paging();
 
 page_table_directory_t *current_dir;
 
-void init_paging() {
+void paging_init() {
     // TODO FIX THIS STUPID THINGS (MORE MEMORY)
     uint32_t end_mem_addr = 0x1000000;
     nframes = end_mem_addr / 0x1000;

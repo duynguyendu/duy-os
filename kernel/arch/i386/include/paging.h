@@ -30,13 +30,14 @@ struct page_table_directory {
     /* Physical address of above tables to load into CR3 */
     uint32_t tables_physical[1024];
 
-    /* Physical address of tables_physical, used when we implemnt heap 
-    When we enable paging, new addr will be virtualized, so we need to store physical addr so we can copy page_dir */
+    /* Physical address of tables_physical, used when we implemnt heap
+    When we enable paging, new addr will be virtualized, so we need to store
+    physical addr so we can copy page_dir */
     uint32_t physical_addr;
 };
 typedef struct page_table_directory page_table_directory_t;
 
-void init_paging();
+void paging_init();
 void switch_page_directory(page_table_directory_t *new_dir);
 page_t *get_page(uint32_t addr, int make, page_table_directory_t *dir);
 void page_fault_handler(registers_t r);

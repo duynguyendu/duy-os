@@ -8,11 +8,11 @@
 
 void main() {
     /* init_timer(100); */
-    init_paging();
+    paging_init();
     tty_init();
     ps2_init();
     disable_cursor();
-    printf("Hello\n");
+    kprintf("%dHello\n", 12);
     enable_cursor();
 
     int *ptr = 0xA0000000;
