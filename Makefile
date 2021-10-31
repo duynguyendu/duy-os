@@ -1,49 +1,94 @@
-# Gcc flags
-CFLAGS = -I${PROJECT_DIR}/include -I${PROJECT_DIR}/kernel/arch/i386/include -fno-pie -ffreestanding -Wall -Wno-int-conversion
+OS_NAME = duyos
+
+# Tools
 CC = i386-elf-gcc
 LD = i386-elf-ld
+ASM = nasm
+CFLAGS = -I./include -I./kernel/arch/i386/include -fno-pie -ffreestanding -Wall -Wno-int-conversion -nostdlib
+ASMFLAGS = -f elf32
 
-SUBDIRS = drivers lib kernel/arch/i386
+# Compile file destination
+BUILD_DIR = build
 
-ASM_SOURCE = kernel/arch/i386/bootstrap.asm
-C_SOURCE = $(wildcard drivers/*.c lib/*.c kernel/arch/i386/*.c)
-HEADERS = $(wildcard include/*.h kernel/arch/i386/include/*.h)
+# Source directories
+KERNEL_DIR = kernel/arch/i386
+DRIVERS_DIR = drivers
+LIB_DIR = lib
 
-OBJ = kernel/arch/i386/kernel_i386.o drivers/drivers.o lib/lib.o 
-OBJ_DEBUG = ${OBJ:.o=.o.debug}
+KERNEL_SOURCE = ${wildcard ${KERNEL_DIR}/*.c ${KERNEL_DIR}/interrupt/*.c}
+KERNEL_ASM = ${wildcard ${KERNEL_DIR}/*.asm ${KERNEL_DIR}/interrupt/*.asm}
+DRIVERS_SOURCE = ${wildcard ${DRIVERS_DIR}/*.c}
+LIB_SOURCE = ${wildcard ${LIB_DIR}/*.c}
+BOOT_ASM = ${KERNEL_DIR}/boot/bootstrap.asm
 
-all: run
+HEADERS = ${wildcard include/*.h ${KERNEL_DIR}/include/*.h}
 
-# Run make in subdirs
-.PHONY: subdirs ${SUBDIRS}
-subdirs: ${SUBDIRS}
-${SUBDIRS}:
-	${MAKE} -C $@ ${MAKECMDGOALS}
+KERNEL_OBJ = ${patsubst %.c, ${BUILD_DIR}/%.o, ${KERNEL_SOURCE}}
+KERNEL_ASM_OBJ = ${patsubst %.asm, ${BUILD_DIR}/%.o, ${KERNEL_ASM}}
+DRIVERS_OBJ = ${patsubst ${DRIVERS_DIR}/%.c, ${BUILD_DIR}/${DRIVERS_DIR}/%.o, ${DRIVERS_SOURCE}}
+LIB_OBJ = ${patsubst ${LIB_DIR}/%.c, ${BUILD_DIR}/${LIB_DIR}/%.o, ${LIB_SOURCE}}
+BOOT_OBJ = ${KERNEL_DIR}/boot/bootstrap.o
 
-os.bin: kernel/arch/i386/boot.o ${OBJ} 
-	${CC} -T linker.ld -o $@ -ffreestanding -O2 -nostdlib $^ -Ttext=0x10000
+KERNEL = ${BUILD_DIR}/kernel.bin
+KERNEL_ELF = ${BUILD_DIR}/kernel.elf
 
-# Elf debug file for kernel
-kernel.elf: ${OBJ_DEBUG}
-	${LD} -T linker.ld -o $@ $^ -Ttext=0x10000
+ISO_DIR = ${BUILD_DIR}/iso
+ISO_BOOTDIR = ${BUILD_DIR}/iso/boot
+GRUB_DIR = ${BUILD_DIR}/iso/boot/grub
+ISO = ${BUILD_DIR}/${OS_NAME}.iso
 
-os.iso: os.bin
-	mkdir -p iso/boot/grub
-	cp os.bin iso/boot/os.bin
-	cp grub.cfg iso/boot/grub/grub.cfg
-	grub-mkrescue -o os.iso iso
+.PHONY: ${KERNEL_SOURCE} ${KERNEL_ASM} ${DRIVERS_SOURCE} ${LIB_SOURCE} ${BOOT_ASM}
 
-run: subdirs os.iso
-	qemu-system-i386 -cdrom os.iso
+all: ${BUILD_DIR} kernel
 
-debug: subdirs os.iso kernel.elf
-	qemu-system-i386 -s -S -cdrom os.iso &
-	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf" -ex "set architecture i386" -ex "target record-full"
+run: iso
+	qemu-system-i386 -cdrom ${ISO}
 
-clean: subdirs
-	rm -f *.bin
+debug: CFLAGS += -g
+debug: ASMFLAGS += -g
+debug: ${BUILD_DIR} ${KERNEL_ELF}
+	qemu-system-i386 -kernel ${KERNEL} -s -S &
+	gdb -ex "target remote localhost:1234" -ex "symbol-file ${KERNEL_ELF}" -ex "set architecture i386" -ex "target record-full"
 
-clean_debug: subdirs
-	rm -f *.elf
+iso: ${BUILD_DIR} ${ISO}
+${ISO}: ${GRUB_DIR} ${KERNEL}
+	@mkdir -p ${ISO_BOOTDIR}
+	cp ${KERNEL} ${ISO_BOOTDIR}/duyos.bin
+	cp grub.cfg ${GRUB_DIR}/grub.cfg
+	grub-mkrescue -o $@ ${ISO_DIR}
+	
+kernel: ${BUILD_DIR} ${KERNEL}
 
-clean_all: clean clean_debug
+${KERNEL}: ${BOOT_OBJ} ${KERNEL_OBJ} ${KERNEL_ASM_OBJ} ${DRIVERS_OBJ} ${LIB_OBJ}
+	${CC} -T linker.ld -o $@ $^ ${CFLAGS}
+
+${KERNEL_ELF}: ${KERNEL}
+	objcopy --only-keep-debug ${KERNEL} $@
+	objcopy --strip-debug ${KERNEL}
+
+${BOOT_OBJ}: ${BOOT_ASM}
+	${ASM} ${ASMFLAGS} -o $@ $^
+
+${KERNEL_OBJ}: ${BUILD_DIR}/${KERNEL_DIR}/%.o : ${KERNEL_DIR}/%.c	
+	${CC} ${CFLAGS} -c $< -o $@
+
+${KERNEL_ASM_OBJ}: ${BUILD_DIR}/${KERNEL_DIR}/%.o : ${KERNEL_DIR}/%.asm
+	${ASM} ${ASMFLAGS} -o $@ $<
+
+${DRIVERS_OBJ}: ${BUILD_DIR}/${DRIVERS_DIR}/%.o : ${DRIVERS_DIR}/%.c	
+	${CC} ${CFLAGS} -c $< -o $@
+
+${LIB_OBJ}: ${BUILD_DIR}/${LIB_DIR}/%.o : ${LIB_DIR}/%.c	
+	${CC} ${CFLAGS} -c $< -o $@
+
+${GRUB_DIR}:
+	@mkdir -p ${BUILD_DIR}/iso/boot/grub
+
+${BUILD_DIR}:
+	@mkdir -p ${BUILD_DIR}/${KERNEL_DIR}/interrupt
+	@mkdir -p ${BUILD_DIR}/${DRIVERS_DIR}
+	@mkdir -p ${BUILD_DIR}/${LIB_DIR}
+
+clean:
+	rm -rf ${BUILD_DIR}
+

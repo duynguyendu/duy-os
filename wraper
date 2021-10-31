@@ -1,4 +1,0 @@
-#!/bin/bash
-
-export PROJECT_DIR=$(pwd)
-make $1
