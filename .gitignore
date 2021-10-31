@@ -58,5 +58,9 @@ dkms.conf
 # Bochs *.lock file
 *.lock
 
+# GRUB file
+*.iso
+iso/
+
 # Clang include path
 compile_flags.txt

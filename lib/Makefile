@@ -19,10 +19,10 @@ LD = i386-elf-ld
 	${CC} -ffreestanding -c $< -o $@ ${CFLAGS} -g
 
 lib.o: ${OBJ}
-	${LD} -o $@ $^ -r
+	${CC} -T ${PROJECT_DIR}/linker.ld -o $@ $^ -r
 
 lib.o.debug: ${OBJ_DEBUG}
-	${LD} -o $@ $^ -r
+	${CC} -T ${PROJECT_DIR}/linker.ld -o $@ $^ -r
 
 all: lib.o
 

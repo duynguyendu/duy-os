@@ -19,10 +19,10 @@ LD = i386-elf-ld
 	${CC} -ffreestanding -c $< -o $@ ${CFLAGS} -g
 
 drivers.o: ${OBJ}
-	${LD} -o $@ $^ -r
+	${CC} -T ${PROJECT_DIR}/linker.ld -o $@ $^ -r
 
 drivers.o.debug: ${OBJ_DEBUG}
-	${LD} -o $@ $^ -r
+	${CC} -T ${PROJECT_DIR}/linker.ld -o $@ $^ -r
 
 all: drivers.o
 

@@ -20,21 +20,24 @@ subdirs: ${SUBDIRS}
 ${SUBDIRS}:
 	${MAKE} -C $@ ${MAKECMDGOALS}
 
-kernel.bin: ${OBJ}
-	${LD} -o $@ $^ --oformat=binary -Ttext=0x1000
+os.bin: kernel/arch/i386/boot.o ${OBJ} 
+	${CC} -T linker.ld -o $@ -ffreestanding -O2 -nostdlib $^ -Ttext=0x10000
 
 # Elf debug file for kernel
 kernel.elf: ${OBJ_DEBUG}
-	${LD} -o $@ $^ -Ttext=0x1000
+	${LD} -T linker.ld -o $@ $^ -Ttext=0x10000
 
-os.bin: kernel/arch/i386/boot.bin kernel.bin 
-	cat $^ > $@
+os.iso: os.bin
+	mkdir -p iso/boot/grub
+	cp os.bin iso/boot/os.bin
+	cp grub.cfg iso/boot/grub/grub.cfg
+	grub-mkrescue -o os.iso iso
 
-run: subdirs os.bin
-	qemu-system-i386 -fda os.bin
+run: subdirs os.iso
+	qemu-system-i386 -cdrom os.iso
 
-debug: subdirs os.bin kernel.elf
-	qemu-system-i386 -s -S -fda os.bin &
+debug: subdirs os.iso kernel.elf
+	qemu-system-i386 -s -S -cdrom os.iso &
 	gdb -ex "target remote localhost:1234" -ex "symbol-file kernel.elf" -ex "set architecture i386" -ex "target record-full"
 
 clean: subdirs
