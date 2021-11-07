@@ -34,6 +34,4 @@ int memcmp(const void *cs, const void *ct, size_t n);
 void *memchr(const void *str, int c, size_t n);
 void *memset(void *str, int c, size_t n);
 
-void int_to_ascii(int n, char str[]);
-
 #endif //! __STRING_H__

@@ -41,7 +41,7 @@ void kprintf(char *fmt, ...) {
             case 'd':
                 ival = va_arg(ap, int);
                 char num[10];
-                int_to_ascii(ival, num);
+                itoa(ival, num);
                 tty_write(num);
                 break;
             case 'x':
