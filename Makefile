@@ -15,13 +15,13 @@ KERNEL_DIR = kernel/arch/i386
 DRIVERS_DIR = drivers
 LIB_DIR = lib
 
-KERNEL_SOURCE = ${wildcard ${KERNEL_DIR}/*.c ${KERNEL_DIR}/interrupt/*.c}
+KERNEL_SOURCE = ${wildcard ${KERNEL_DIR}/*.c ${KERNEL_DIR}/interrupt/*.c ${KERNEL_DIR}/kernel/*.c}
 KERNEL_ASM = ${wildcard ${KERNEL_DIR}/*.asm ${KERNEL_DIR}/interrupt/*.asm}
 DRIVERS_SOURCE = ${wildcard ${DRIVERS_DIR}/*.c}
 LIB_SOURCE = ${wildcard ${LIB_DIR}/*.c}
 BOOT_ASM = ${KERNEL_DIR}/boot/bootstrap.asm
 
-HEADERS = ${wildcard include/*.h ${KERNEL_DIR}/include/*.h}
+HEADERS = ${wildcard include/*.h ${KERNEL_DIR}/include/*.h ${KERNEL_DIR}/include/interrupt/*.h ${KERNEL_DIR}/include/kernel/*.h}
 
 KERNEL_OBJ = ${patsubst %.c, ${BUILD_DIR}/%.o, ${KERNEL_SOURCE}}
 KERNEL_ASM_OBJ = ${patsubst %.asm, ${BUILD_DIR}/%.o, ${KERNEL_ASM}}
@@ -86,6 +86,7 @@ ${GRUB_DIR}:
 
 ${BUILD_DIR}:
 	@mkdir -p ${BUILD_DIR}/${KERNEL_DIR}/interrupt
+	@mkdir -p ${BUILD_DIR}/${KERNEL_DIR}/kernel
 	@mkdir -p ${BUILD_DIR}/${DRIVERS_DIR}
 	@mkdir -p ${BUILD_DIR}/${LIB_DIR}
 
