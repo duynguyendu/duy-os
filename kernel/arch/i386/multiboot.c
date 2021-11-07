@@ -17,8 +17,8 @@ void multiboot_read_bios_data(multiboot_info_t *mbd, uint32_t magic) {
         multiboot_mmap_entry_t *mmmt =
             (multiboot_mmap_entry_t *)(mbd->mmap_addr + i);
 
-        kprintf("Start Addr: %x | Length: %x | Size: %x | Type: %d\n",
-               mmmt->base_addr, mmmt->length, mmmt->size, mmmt->type);
+        kprintf("Start Addr: %lx | Length: %ld | Size: %x | Type: %d\n",
+               mmmt->base_addr, mmmt->length/1024, mmmt->size, mmmt->type);
 
         // if (mmmt->type == MULTIBOOT_MEMORY_AVAILABLE_RAM) {
             /*

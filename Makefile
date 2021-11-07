@@ -4,7 +4,7 @@ OS_NAME = duyos
 CC = i386-elf-gcc
 LD = i386-elf-ld
 ASM = nasm
-CFLAGS = -I./include -I./kernel/arch/i386/include -fno-pie -ffreestanding -Wall -Wno-int-conversion -nostdlib
+CFLAGS = -I./include -I./kernel/arch/i386/include -fno-pie -ffreestanding -Wall -Wno-int-conversion -nostdlib -lgcc
 ASMFLAGS = -f elf32
 
 # Compile file destination
