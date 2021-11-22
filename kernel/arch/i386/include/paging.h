@@ -4,6 +4,8 @@
 #include <isr.h>
 #include <types.h>
 
+#define PAGE_SIZE 4096 // 4KB
+#define PAGE_DIRECTORY_ENTRY_SIZE  0x400000 // 4MB
 /* Fields in page table entry */
 struct page {
     uint32_t present : 1;
@@ -39,11 +41,15 @@ typedef struct page_table_directory page_table_directory_t;
 
 void paging_init();
 void switch_page_directory(page_table_directory_t *new_dir);
+void enable_4mb_pages();
+void disable_4mb_pages();
 page_t *get_page(uint32_t addr, int make, page_table_directory_t *dir);
 void page_fault_handler(registers_t r);
 
 /* Frame code */
 void allocate_frame(page_t *page, uint32_t is_kernel, uint32_t is_writable);
+void map_to_frame(page_t *page, uint32_t frame_index, uint32_t is_kernel, uint32_t is_writable);
+void copy_page(page_t *src, page_t *dest);
 void free_frame(page_t *page);
 
 #endif // !__PAGING_H__

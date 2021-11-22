@@ -8,6 +8,8 @@ uint32_t nframes;
 
 extern uint32_t placement_address;
 
+#define KERNEL_OFFSET 0xC0000000
+
 #define INDEX(bits) bits / (4 * 8)
 #define OFFSET(bits) bits % (4 * 8)
 
@@ -21,7 +23,8 @@ page_table_directory_t *current_dir;
 
 void paging_init() {
     // TODO FIX THIS STUPID THINGS (MORE MEMORY)
-    uint32_t end_mem_addr = 0x1000000;
+    // TODO: number of frames depend on the amount of ram
+    uint32_t end_mem_addr = 0x8000000;
     nframes = end_mem_addr / 0x1000;
     frames = (uint32_t *)malloc(INDEX(nframes));
     memset(frames, 0, INDEX(nframes));
@@ -32,17 +35,38 @@ void paging_init() {
 
     for (uint32_t i = 0; i < 1024; i++) {
         allocate_frame(get_page(i * 0x1000, 1, kernel_directory), 1, 1);
+        copy_page(get_page(i * 0x1000, 1, kernel_directory),
+                  get_page(i * 0x1000 + KERNEL_OFFSET, 1, kernel_directory));
+    }
+
+    for (uint32_t i = 0; i < 1024; i++) {
+        allocate_frame(
+            get_page(i * 0x1000 + KERNEL_OFFSET + PAGE_DIRECTORY_ENTRY_SIZE, 1, kernel_directory), 1, 1);
     }
 
     register_interrupt_handler(14, page_fault_handler);
-
     switch_page_directory(kernel_directory);
-    enable_paging();
+}
+
+void enable_4mb_pages() {
+    uint32_t cr4;
+    __asm__ volatile("mov %%cr4, %0" : "=r"(cr4) :);
+    cr4 |= 0x00000010;
+    __asm__ volatile("mov %0, %%cr4" : : "r"(cr4));
+}
+
+void disable_4mb_pages() {
+    uint32_t cr4;
+    __asm__ volatile("mov %%cr4, %0" : "=r"(cr4) :);
+    cr4 &= ~0x00000010;
+    __asm__ volatile("mov %0, %%cr4" : : "r"(cr4));
 }
 
 void switch_page_directory(page_table_directory_t *new_dir) {
     current_dir = new_dir;
-    __asm__ volatile("mov %0, %%cr3" : : "r"(&new_dir->tables_physical));
+    __asm__ volatile("mov %0, %%cr3"
+                     :
+                     : "r"((uint32_t)&new_dir->tables_physical - KERNEL_OFFSET));
 }
 
 static void enable_paging() {
@@ -63,7 +87,7 @@ page_t *get_page(uint32_t addr, int make, page_table_directory_t *dir) {
         dir->tables[table_index] =
             (page_table_t *)malloc_ap(sizeof(page_table_t), &temp);
         memset(dir->tables[table_index], 0, 0x1000);
-        dir->tables_physical[table_index] = temp | 0x3;
+        dir->tables_physical[table_index] = (temp - KERNEL_OFFSET) | 0x3;
         return &dir->tables[table_index]->pages[addr % 1024];
     } else {
         return 0;
@@ -145,6 +169,22 @@ void allocate_frame(page_t *page, uint32_t is_kernel, uint32_t is_writable) {
     page->us = is_kernel ? 1 : 0;
     page->rw = is_writable ? 1 : 0;
     page->frame_addr = index;
+}
+
+void map_to_frame(page_t *page, uint32_t frame_index, uint32_t is_kernel,
+                   uint32_t is_writable) {
+    set_frame(frame_index * 0x1000);
+    page->present = 1;
+    page->us = is_kernel ? 1 : 0;
+    page->rw = is_writable ? 1 : 0;
+    page->frame_addr = frame_index;
+}
+
+void copy_page(page_t *src, page_t *dest) {
+    dest->frame_addr = src->frame_addr;
+    dest->present = src->present;
+    dest->us = src->us;
+    dest->rw = src->rw;
 }
 
 void free_frame(page_t *page) {

@@ -22,7 +22,8 @@ enum vga_color {
     VGA_COLOR_WHITE = 15,
 };
 
-#define VIDEO_MEMORY 0xb8000
+// Higher half kernel mapping
+#define VIDEO_MEMORY 0xC00B8000
 #define MAX_ROW 25
 #define MAX_COL 80
 #define VIDEO_MEMORY_SIZE 2000

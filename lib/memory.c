@@ -1,6 +1,7 @@
 #include <memory.h>
 
-uint32_t placement_address = 0x20000;
+// Kernel space allocation
+uint32_t placement_address = 0xC0400000;
 
 /* This malloc is not using heap */
 // TODO rewrite code when heap is enable
