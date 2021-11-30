@@ -212,7 +212,7 @@ struct multiboot_info {
             uint8_t framebuffer_blue_field_position;
             uint8_t framebuffer_blue_mask_size;
         } color_type;
-    } ;
+    };
 };
 typedef struct multiboot_info multiboot_info_t;
 
@@ -223,6 +223,6 @@ struct multiboot_color {
 };
 
 void _main(multiboot_mmap_entry_t *);
-void multiboot_read_bios_data(multiboot_info_t *mbd, uint32_t magic);
+long multiboot_read_bios_data(multiboot_info_t *mbd, uint32_t magic);
 
 #endif // !__MULTIBOOT_H__

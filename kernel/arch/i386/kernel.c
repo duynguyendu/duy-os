@@ -12,9 +12,13 @@
 void main(multiboot_info_t *mbd, uint32_t magic) {
     tty_init();
     kprintf("Hello from DuyOS\n");
-    multiboot_read_bios_data(mbd, magic);
+    long ram_size = multiboot_read_bios_data(mbd, magic);
     gdt_init();
     idt_init();
-    paging_init();
+    paging_init(ram_size);
     ps2_init();
+
+    int *a = 0x2000000;
+    *a = 10;
+    kprintf("This is done by page fault: %d\n", *a);
 }

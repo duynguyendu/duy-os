@@ -21,29 +21,36 @@ static void enable_paging();
 
 page_table_directory_t *current_dir;
 
-void paging_init() {
-    // TODO FIX THIS STUPID THINGS (MORE MEMORY)
-    // TODO: number of frames depend on the amount of ram
-    uint32_t end_mem_addr = 0x8000000;
-    nframes = end_mem_addr / 0x1000;
-    frames = (uint32_t *)malloc(INDEX(nframes));
-    memset(frames, 0, INDEX(nframes));
+void paging_init(long ram_size) {
+    kprintf("[Paging] Initializing\n");
 
+    nframes = ram_size / 0x1000;
+    frames = (uint32_t *)kmalloc(INDEX(nframes));
+    memset(frames, 0, INDEX(nframes));
+    kprintf("[Paging] Number of frames: %d\n", nframes);
+
+    /* Allocate page directory */
     page_table_directory_t *kernel_directory =
-        (page_table_directory_t *)malloc_a(sizeof(page_table_directory_t));
+        (page_table_directory_t *)kmalloc_a(sizeof(page_table_directory_t));
     memset(kernel_directory, 0, sizeof(page_table_directory_t));
 
+    /* Map higher half kernel code and init address 0 to the same physical
+       address */
     for (uint32_t i = 0; i < 1024; i++) {
         allocate_frame(get_page(i * 0x1000, 1, kernel_directory), 1, 1);
         copy_page(get_page(i * 0x1000, 1, kernel_directory),
                   get_page(i * 0x1000 + KERNEL_OFFSET, 1, kernel_directory));
     }
 
+    /* Map kernel data space */
     for (uint32_t i = 0; i < 1024; i++) {
         allocate_frame(
-            get_page(i * 0x1000 + KERNEL_OFFSET + PAGE_DIRECTORY_ENTRY_SIZE, 1, kernel_directory), 1, 1);
+            get_page(i * 0x1000 + KERNEL_OFFSET + PAGE_DIRECTORY_ENTRY_SIZE, 1,
+                     kernel_directory),
+            1, 1);
     }
 
+    kprintf("[Paging] Install page fault handler\n");
     register_interrupt_handler(14, page_fault_handler);
     switch_page_directory(kernel_directory);
 }
@@ -64,9 +71,10 @@ void disable_4mb_pages() {
 
 void switch_page_directory(page_table_directory_t *new_dir) {
     current_dir = new_dir;
-    __asm__ volatile("mov %0, %%cr3"
-                     :
-                     : "r"((uint32_t)&new_dir->tables_physical - KERNEL_OFFSET));
+    __asm__ volatile(
+        "mov %0, %%cr3"
+        :
+        : "r"((uint32_t)&new_dir->tables_physical - KERNEL_OFFSET));
 }
 
 static void enable_paging() {
@@ -85,7 +93,7 @@ page_t *get_page(uint32_t addr, int make, page_table_directory_t *dir) {
     } else if (make) {
         uint32_t temp;
         dir->tables[table_index] =
-            (page_table_t *)malloc_ap(sizeof(page_table_t), &temp);
+            (page_table_t *)kmalloc_ap(sizeof(page_table_t), &temp);
         memset(dir->tables[table_index], 0, 0x1000);
         dir->tables_physical[table_index] = (temp - KERNEL_OFFSET) | 0x3;
         return &dir->tables[table_index]->pages[addr % 1024];
@@ -103,22 +111,25 @@ void page_fault_handler(registers_t r) {
     int reserved = !(r.err_code & 0x8);
     int id = !(r.err_code & 0x10);
 
-    kprintf("Page Fault (");
     if (present) {
-        kprintf("present ");
+        int page_table_index = faulting_address / 0x1000;
+        // FIXME fix frames full when using for loop
+        for (uint32_t i = 0; i < 1024; i++) {
+            allocate_frame(get_page((page_table_index + i) * 0x1000, 1, current_dir), 1, 1);
+        }
+    } else {
+        if (rw) {
+            kprintf("read-only ");
+        }
+        if (us) {
+            kprintf("user-mode ");
+        }
+        if (reserved) {
+            kprintf("reserved");
+        }
+        kprintf(") at 0x%X\n", faulting_address);
+        while(1);
     }
-    if (rw) {
-        kprintf("read-only ");
-    }
-    if (us) {
-        kprintf("user-mode ");
-    }
-    if (reserved) {
-        kprintf("reserved");
-    }
-    kprintf(") at 0x%X\n", faulting_address);
-    while (1)
-        ;
 }
 
 static void set_frame(uint32_t frame_addr) {
@@ -172,7 +183,7 @@ void allocate_frame(page_t *page, uint32_t is_kernel, uint32_t is_writable) {
 }
 
 void map_to_frame(page_t *page, uint32_t frame_index, uint32_t is_kernel,
-                   uint32_t is_writable) {
+                  uint32_t is_writable) {
     set_frame(frame_index * 0x1000);
     page->present = 1;
     page->us = is_kernel ? 1 : 0;

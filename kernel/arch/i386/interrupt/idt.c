@@ -10,11 +10,14 @@ idt_ptr_t idt_prt;
 /* Initialize idt */
 void idt_init() {
     /* Set pointer to table */
+    kprintf("[IDT] Initializing\n");
     idt_prt.limit = sizeof(idt_entry_t) * 256 - 1;
     idt_prt.base = (uint32_t)&idt_entry;
 
+    kprintf("[IDT] Installing ISR\n");
     install_isr();
 
+    kprintf("[IDT] Loading IDT table\n");
     /* Tell system location of IDT */
     __asm__ __volatile__("lidt (%0)" : : "r"(&idt_prt));
     /* Enable interrupt */

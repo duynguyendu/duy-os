@@ -1,4 +1,5 @@
 #include <gdt.h>
+#include <stdio.h>
 
 gdt_entry_t gdt_entries[3];
 gdt_table_t gdt_table;
@@ -33,6 +34,7 @@ void add_gdt_entry(gdt_entry_t *entry, uint32_t base, uint32_t limit,
 }
 
 void gdt_init() {
+    kprintf("[GDT] Initializing\n");
     gdt_table.size = sizeof(gdt_entries) - 1;
     gdt_table.addr = &gdt_entries;
 
@@ -44,5 +46,6 @@ void gdt_init() {
     /* Data segment */
     add_gdt_entry(&gdt_entries[2], 0, 0xfffff, 1, 0x00, 1, 0, 0, 1, 0, 1, 1, 0,
                   0);
+    kprintf("[GDT] Loading gdt table\n");
     load_gdt(&gdt_table);
 }

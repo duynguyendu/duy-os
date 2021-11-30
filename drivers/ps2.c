@@ -12,7 +12,7 @@ static enum device_type identify_device(uint8_t first, uint8_t second);
 
 void ps2_init() {
     bool devices[] = {true, true};
-    kprintf("PS2 Initialize\n");
+    kprintf("[PS2] Initializing\n");
     CLI();
 
     /* Disable 2 channel */

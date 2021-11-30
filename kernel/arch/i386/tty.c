@@ -1,8 +1,12 @@
+#include <drivers/vga.h>
+#include <stdio.h>
 #include <string.h>
 #include <tty.h>
-#include <drivers/vga.h>
 
-void tty_init() { vga_clear_screen(); }
+void tty_init() {
+    vga_clear_screen();
+    kprintf("[TTY] Initializing\n");
+}
 
 void tty_write(char *message) { vga_print(message); }
 
@@ -10,7 +14,7 @@ void tty_putchar(char c) { vga_put(c); }
 
 void receive_key(char key, uint8_t mask) {
     // TODO masking
-    if (!(mask & 8)){
+    if (!(mask & 8)) {
         if (key == '\b') {
             vga_backspace();
             // TODO backspace

@@ -122,7 +122,6 @@ void register_interrupt_handler(uint8_t n, isr_t handler) {
 }
 
 void isr_handler(registers_t r) {
-    kprintf("Interrupt: %d\n", r.int_no);
     if (interrupt_handlers[r.int_no] != 0) {
         isr_t handler = interrupt_handlers[r.int_no];
         handler(r);
