@@ -1,4 +1,5 @@
 #include <drivers/keyboard.h>
+#include <drivers/pci.h>
 #include <drivers/ps2.h>
 #include <drivers/vga.h>
 #include <gdt.h>
@@ -17,8 +18,6 @@ void main(multiboot_info_t *mbd, uint32_t magic) {
     idt_init();
     paging_init(ram_size);
     ps2_init();
-
-    int *a = 0x2000000;
-    *a = 10;
-    kprintf("This is done by page fault: %d\n", *a);
+    vga_clear_screen();
+    pci_init();
 }

@@ -1,23 +1,27 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <tty.h>
-#include <stdlib.h>
 
 #define UPPER_CASE 1
 #define LOWER_CASE 0
 
 void print_hex(int num, int _case) {
+    if (num == 0) {
+        putchar('0');
+        return;
+    }
     char hex_num[] = "0123456789abcdef";
     char hex_num_upper[] = "0123456789ABCDEF";
     char str[8];
     int i;
     if (_case == UPPER_CASE) {
-        for (i = 0; i < 8; i++, num >>= 4) {
+        for (i = 0; i < 8 && num != 0; i++, num >>= 4) {
             str[i] = hex_num_upper[num & 0xF];
         }
     } else {
-        for (i = 0; i < 8; i++, num >>= 4) {
+        for (i = 0; i < 8 && num != 0; i++, num >>= 4) {
             str[i] = hex_num[num & 0xF];
         }
     }
@@ -33,11 +37,11 @@ void print_hex_long(long long num, int _case) {
     char str[16];
     int i;
     if (_case == UPPER_CASE) {
-        for (i = 0; i < 16; i++, num >>= 4) {
+        for (i = 0; i < 16 && num != 0; i++, num >>= 4) {
             str[i] = hex_num_upper[num & 0xF];
         }
     } else {
-        for (i = 0; i < 16; i++, num >>= 4) {
+        for (i = 0; i < 16 && num != 0; i++, num >>= 4) {
             str[i] = hex_num[num & 0xF];
         }
     }
