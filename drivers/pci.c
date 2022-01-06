@@ -49,10 +49,6 @@ void pci_check_device(uint8_t bus, uint8_t device) {
     class_code = pci_read_field_byte(bus, device, func, PCI_CLASS_CODE);
     subclass = pci_read_field_byte(bus, device, func, PCI_SUBCLASS);
     num_of_dev++;
-    kprintf("%d:%d:%d Class: %x Subclass: %x Vendor: %x Device: %x\n", bus,
-            device, func, class_code, subclass,
-            pci_read_field_word(bus, device, func, PCI_VENDOR_ID),
-            pci_read_field_word(bus, device, func, PCI_DEVICE_ID));
     /* Check if this is a bridge */
     check_function(bus, device, func);
 
@@ -72,11 +68,6 @@ void pci_check_device(uint8_t bus, uint8_t device) {
                 class_code =
                     pci_read_field_byte(bus, device, func, PCI_CLASS_CODE);
                 subclass = pci_read_field_byte(bus, device, func, PCI_SUBCLASS);
-                kprintf(
-                    "%d:%d:%d Class: %x Subclass: %x Vendor: %x Device: %x\n",
-                    bus, device, func, class_code, subclass,
-                    pci_read_field_word(bus, device, func, PCI_VENDOR_ID),
-                    pci_read_field_word(bus, device, func, PCI_DEVICE_ID));
                 num_of_dev++;
 
                 if (class_code == 0x01 && subclass == 0x01) {
