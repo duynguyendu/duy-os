@@ -42,7 +42,9 @@ ISO = ${BUILD_DIR}/${OS_NAME}.iso
 all: ${BUILD_DIR} kernel
 
 run: iso
-	qemu-system-i386 -cdrom ${ISO}
+	# qemu-system-i386 -drive id=disk,file=${ISO},if=none -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0
+	# qemu-system-i386 -cdrom ${ISO}
+	qemu-system-i386 ${ISO}
 
 debug: CFLAGS += -g
 debug: ASMFLAGS += -g
