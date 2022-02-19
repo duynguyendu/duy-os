@@ -5,6 +5,7 @@
 #include <gdt.h>
 #include <idt.h>
 #include <interrupt/irq0_timer.h>
+#include <kernel/heap.h>
 #include <multiboot.h>
 #include <paging.h>
 #include <stdio.h>
@@ -20,4 +21,11 @@ void main(multiboot_info_t *mbd, uint32_t magic) {
     ps2_init();
     vga_clear_screen();
     pci_init();
+
+    char *temp = (char *)kmalloc_new(10);
+    temp[0] = 'a';
+    temp[1] = 'b';
+    temp[2] = '\0';
+    kprintf("%s", temp);
+    kfree(temp);
 }

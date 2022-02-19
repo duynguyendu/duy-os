@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <tty.h>
+#include <drivers/keyboard.h>
 
 void tty_init() {
     vga_clear_screen();
@@ -14,12 +15,16 @@ void tty_putchar(char c) { vga_put(c); }
 
 void receive_key(char key, uint8_t mask) {
     // TODO masking
-    if (!(mask & 8)) {
+    if (!(mask & RELEASE_MASK)) {
         if (key == '\b') {
             vga_backspace();
             // TODO backspace
+        } else if (key == '\n') {
+            // TODO execute something
+            tty_putchar('$');
+            tty_putchar(key);
         } else {
-            if (!(mask & 8) && mask & 1) {
+            if (mask & CONTROL_MASK) {
                 tty_putchar('^');
             }
             /* TODO shortcut, print, ... */
